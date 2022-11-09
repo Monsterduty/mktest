@@ -3,24 +3,22 @@ mktest 1.0
 	and autogenerate Makefiles
 
 USAGE:
-
-	mktest
-	mktest --help
-	mktest --template xlib
-			  sdl2_image
-			  imlib2
-			  curl
-	mktest --editor emacs
-			nvim
-			vim
-			vi
-
+    mktest
+    mktest --help
+    mktest --new 		  -> generate new source file
+    mktest --template xlib 	  -> generate new source file with
+		      sdl2_image     code template
+		      imlib2
+	 	      curl
+    mktest --editor emacs	  -> open file with the selected editor
+		    nvim
+		    vim
+		    vi
 IN DOCUMENT:
-
-	//mod editor-> emacs
-		       nvim
-		       vim
-		       vi
-	       debug-> true
-	       compiler-> g++
-	       		  clang++
+    //mod editor-> emacs	   -> the same as above but as
+	           nvim               a comment document variable
+		    vim
+		    vi
+    debug-> true	      	   -> enable the debugger tool
+    compiler-> g++	           -> change the compiler to use
+               clang++
