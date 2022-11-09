@@ -7,7 +7,7 @@ mktest: mktest.cpp defaultIncludes.h.gch templates.h.gch
 
 defaultIncludes.h.gch: defaultIncludes.h
 
-	$(CC) defaultIncludes.h.gch
+	$(CC) defaultIncludes.h
 
 templates.h.gch: templates.h
 

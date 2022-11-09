@@ -176,6 +176,7 @@ int main(int argc, char const *argv[])
 			if ( aux.find("--help") != string::npos ){ cout << helpMessage << endl; return 0; };
 			if ( aux.find("--template") != string::npos ){ templates = true; };
 			if ( aux.find("--editor") != string::npos ){ editor = true; };
+			if ( aux.find("--new") != string::npos ){ createNecesaryFiles("test.cpp"); };
 
 		};
 		if (templates){ cout << "--template require an argument!"; return 1; };
