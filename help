@@ -1,0 +1,26 @@
+mktest 1.0
+	simple tool for autogenerate projects of libraries
+	and autogenerate Makefiles
+
+USAGE:
+
+	mktest
+	mktest --help
+	mktest --template xlib
+			  sdl2_image
+			  imlib2
+			  curl
+	mktest --editor emacs
+			nvim
+			vim
+			vi
+
+IN DOCUMENT:
+
+	//mod editor-> emacs
+		       nvim
+		       vim
+		       vi
+	       debug-> true
+	       compiler-> g++
+	       		  clang++

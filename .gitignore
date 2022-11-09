@@ -1,0 +1,6 @@
+myInstall.sh
+*.gch
+*.png
+mktest
+ex.cpp
+ret.h
