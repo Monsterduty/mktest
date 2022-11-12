@@ -10,15 +10,28 @@ USAGE:
 		      sdl2_image     code template
 		      imlib2
 	 	      curl
+    mktest --args     foo foo *   -> args to pass to the programs
+    				     must be at the end if you
+				     are using other args for
+				     mktest
     mktest --editor emacs	  -> open file with the selected editor
 		    nvim
 		    vim
 		    vi
 IN DOCUMENT:
-    //mod editor-> emacs	   -> the same as above but as
-	           nvim               a comment document variable
-		    vim
-		    vi
-    debug-> true	      	   -> enable the debugger tool
-    compiler-> g++	           -> change the compiler to use
+    //mod foo* foo*
+    
+    editor-> emacs	   	   -> the same as above but as
+	     nvim               a comment document variable
+	     vim
+	     vi
+    compiler-> g++		   -> change the compiler to use
+    	       gcc
                clang++
+	       clang
+    debug-> true                   -> enable the debugger tool
+    reEdit-> true		   -> wait for three secons and
+    				      enter again to edit source
+    				      code after compile and
+				      execute the code
+    //args foo* foo*		   -> arguments to pass to the program

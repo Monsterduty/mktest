@@ -1,8 +1,8 @@
-#include "defaultIncludes.h"
-#include "templates.h"
-#include "resources.h"
+#include "defaultIncludes.hpp"
+#include "templates.hpp"
+#include "resources.hpp"
 
-#define TEST cout << "test" << endl;
+#define test cout << "Test" << endl;
 
 using std::cout;
 using std::endl;
@@ -10,6 +10,8 @@ using std::string;
 using std::ofstream;
 using std::istringstream;
 using std::getline;
+using std::this_thread::sleep_for;
+using std::chrono::seconds;
 
 //======================================================================================
 // GLOBAL VARIALBES
@@ -20,8 +22,21 @@ string path = "/tmp/test.cpp";
 string compiler = "g++";
 string mkfileExtras = "";
 string defaultEditor = editor+path;
+string programsArgs = "";
+bool reEdit = false;
 
 //======================================================================================
+
+void resetVariables()
+{
+	editor = "nano ";
+	path = "/tmp/test.cpp";
+	compiler = "g++";
+	mkfileExtras = "";
+	defaultEditor = editor+path;
+	programsArgs = "";
+	reEdit = false;
+};
 
 string locateFile(string path){
 
@@ -76,7 +91,7 @@ string readFile(){
 	while ( getline( d, buffer ) )
 	{
 
-		if ( buffer.find("//mod ") != string::npos )
+		if ( buffer.find("//mod-> ") != string::npos )
 		{ 
 			if ( buffer.find(" editor-> ") != string::npos )
 			{	
@@ -89,11 +104,21 @@ string readFile(){
 			{
 				if ( buffer.find(" g++") != string::npos ){ compiler = "g++"; };
 				if ( buffer.find(" clang++") != string::npos ){ compiler = "clang++"; };
+				if ( buffer.find(" gcc") != string::npos ){ compiler = "gcc"; };
+				if ( buffer.find(" clang") != string::npos ){ compiler = "clang"; };
 			};
-			if ( buffer.find(" debug-> ") != string::npos )
-			{ TEST
-				if ( buffer.find(" true") != string::npos ){ results += "-g -O3 "; mkfileExtras = "	gdb --se=/tmp/a.out --readnow -q\0"; };
+			if ( buffer.find(" debug-> true") != string::npos )
+			{ 
+				results += "-g -O3 "; mkfileExtras = "	gdb --se=/tmp/a.out --readnow -q\0";
 			};
+			if ( buffer.find(" reEdit-> true") != string::npos ) reEdit = true;
+		};
+
+		if ( buffer.find( "//args-> " ) != string::npos )
+		{
+			programsArgs = "";
+			for ( int i = 9; i < buffer.size(); i++ )
+				programsArgs+= buffer[i];
 		};
 
 		if ( buffer.find("#include") != string::npos )
@@ -133,11 +158,6 @@ void makeFile(string flags){
 
 };
 
-void help()
-{
-
-}
-
 void createExampleFile(string wich)
 {
 	ofstream file("/tmp/test.cpp");
@@ -150,39 +170,8 @@ void createExampleFile(string wich)
 	cout << wich << " is not a valid argument for --template" << endl;
 };
 
-int main(int argc, char const *argv[])
+void mktest()
 {
-
-	if ( argc > 1 )
-	{
-		bool templates = false;
-		bool editor = false;
-		for ( int i = 0; i < argc; i++ )
-		{
-			string aux = argv[i];
-
-			if ( templates )
-			{
-				createExampleFile(aux);
-				templates = false;
-			};
-
-			if ( editor )
-			{
-				defaultEditor = aux + " " + path;
-				editor = false;
-			};
-
-			if ( aux.find("--help") != string::npos ){ cout << helpMessage << endl; return 0; };
-			if ( aux.find("--template") != string::npos ){ templates = true; };
-			if ( aux.find("--editor") != string::npos ){ editor = true; };
-			if ( aux.find("--new") != string::npos ){ createNecesaryFiles("test.cpp"); };
-
-		};
-		if (templates){ cout << "--template require an argument!"; return 1; };
-		if (editor) { cout << "--editor require an argument!"; return 1; };
-	};
-
 	string files = locateFile("/tmp");
 
 	if ( files.find(".cpp") == std::string::npos )
@@ -199,12 +188,66 @@ int main(int argc, char const *argv[])
 	string flags = readFile();
 	
 	cout << "flags: " << flags << endl;
+	cout << "args: " << programsArgs << endl;
 	cout << "CC: " << compiler << endl;
 	
 	makeFile(flags);
 	
 	system("make -s -C /tmp");
-	system("/tmp/a.out");
-	
+	string execute = "/tmp/a.out " + programsArgs;
+	system( execute.c_str() );
+
+	if ( reEdit )
+	{
+		sleep_for(seconds(3));
+		resetVariables();
+		mktest();
+	}
+};
+
+int main(int argc, char const *argv[])
+{
+
+	if ( argc > 1 )
+	{
+		bool templates = false;
+		bool editor = false;
+		bool args = false;
+		for ( int i = 0; i < argc; i++ )
+		{
+			string aux = argv[i];
+
+			if ( templates )
+			{
+				createExampleFile(aux);
+				templates = false;
+			};
+
+			if ( editor )
+			{
+				defaultEditor = aux + " " + path;
+				editor = false;
+			};
+
+			if ( args )
+			{
+				for ( int f = i; f < argc; f++ )
+					programsArgs += aux + " ";
+				args = false;
+			};
+
+			if ( aux.find("--help") != string::npos ){ cout << helpMessage << endl; return 0; };
+			if ( aux.find("--template") != string::npos ){ templates = true; };
+			if ( aux.find("--editor") != string::npos ){ editor = true; };
+			if ( aux.find("--new") != string::npos ){ createNecesaryFiles("test.cpp"); };
+			if ( aux.find("--args") != string::npos ){ args = true; };
+
+		};
+		if (templates){ cout << "--template require an argument!"; return 1; };
+		if (editor) { cout << "--editor require an argument!"; return 1; };
+	};
+
+	mktest();
+
 	return 0;
 }

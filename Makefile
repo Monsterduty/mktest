@@ -1,14 +1,17 @@
 CC = g++
 
-
-mktest: mktest.cpp defaultIncludes.h.gch templates.h.gch
+mktest: mktest.cpp defaultIncludes.hpp.gch templates.hpp.gch
 
 	$(CC) mktest.cpp -o mktest
 
-defaultIncludes.h.gch: defaultIncludes.h
+defaultIncludes.hpp.gch: defaultIncludes.hpp
 
-	$(CC) defaultIncludes.h
+	$(CC) defaultIncludes.hpp
 
-templates.h.gch: templates.h
+templates.hpp.gch: templates.hpp
 
-	$(CC) templates.h
+	$(CC) templates.hpp
+
+clean:
+
+	rm -f mktest *gch
