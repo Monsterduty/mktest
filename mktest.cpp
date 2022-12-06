@@ -1,8 +1,5 @@
 #include "defaultIncludes.hpp"
 #include "templates.hpp"
-#include "resources.hpp"
-
-#define test cout << "Test" << endl;
 
 using std::cout;
 using std::endl;
@@ -44,19 +41,14 @@ string locateFile(string path){
 
 	for ( const auto& entry : std::filesystem::directory_iterator( path ) )
 	{
-
 		aux = entry.path();
 
 		if ( aux.find(".cpp") != string::npos || aux.find("Makefile") != string::npos )
 		{
-
 			files += entry.path();
 			files += '\n';
-
 		};
-
 	};
-
 	return files;
 };
 
@@ -65,10 +57,12 @@ void createNecesaryFiles(string fileName){
 	string name = "/tmp/" + fileName;
 	ofstream file (name);
 	file << "//cpp template\n";
-	file << "#include <iostream>\n\n";
+	file << "#include <iostream>\n";
+	file << "#include <string>\n\n";
+	file << "using std::string;\n";
 	file << "using std::cout;\n";
 	file << "using std::endl;\n\n";
-	file << "int main(){\n\n return 0;\n}";
+	file << "int main(int argc, char *argv[])\n{\n\n return 0;\n}";
 	file.close();
 
 };
@@ -90,38 +84,37 @@ string readFile(){
 	
 	while ( getline( d, buffer ) )
 	{
-
-		if ( buffer.find("//mod-> ") != string::npos )
+		if ( buffer.find("//mod-> ") != string::npos ) // detecting mod args
 		{ 
-			if ( buffer.find(" editor-> ") != string::npos )
+			if ( buffer.find(" editor-> ") != string::npos ) // the kind of editor if was specified, if isn't specified by default will use nano
 			{	
-				if ( buffer.find(" emacs") != string::npos ){ defaultEditor = "emacs " + path; };
-				if ( buffer.find(" nvim") != string::npos ){ defaultEditor = "nvim " + path; };
-				if ( buffer.find(" vim") != string::npos ){ defaultEditor = "vim " + path; };
-				if ( buffer.find(" vi") != string::npos ){ defaultEditor = "vi " + path; };
+				if ( buffer.find(" emacs") != string::npos ) defaultEditor = "emacs " + path;
+				if ( buffer.find(" nvim") != string::npos ) defaultEditor = "nvim " + path;
+				if ( buffer.find(" vim") != string::npos ) defaultEditor = "vim " + path;
+				if ( buffer.find(" vi") != string::npos ) defaultEditor = "vi " + path;
 			};
-			if( buffer.find( " compiler-> " ) != string::npos )
+			if( buffer.find( " compiler-> " ) != string::npos ) // the compiler to use, if isn't specified by default will use g++
 			{
-				if ( buffer.find(" g++") != string::npos ){ compiler = "g++"; };
-				if ( buffer.find(" clang++") != string::npos ){ compiler = "clang++"; };
-				if ( buffer.find(" gcc") != string::npos ){ compiler = "gcc"; };
-				if ( buffer.find(" clang") != string::npos ){ compiler = "clang"; };
+				if ( buffer.find(" gcc") != string::npos ) compiler = "gcc";
+				if ( buffer.find(" g++") != string::npos ) compiler = "g++";
+				if ( buffer.find(" clang") != string::npos ) compiler = "clang";
+				if ( buffer.find(" clang++") != string::npos ) compiler = "clang++";
 			};
-			if ( buffer.find(" debug-> true") != string::npos )
+			if ( buffer.find(" debug") != string::npos ) // coplile the executable with debug flags and open it with dgb for debug
 			{ 
 				results += "-g -O3 "; mkfileExtras = "	gdb --se=/tmp/a.out --readnow -q\0";
 			};
-			if ( buffer.find(" reEdit-> true") != string::npos ) reEdit = true;
+			if ( buffer.find(" reEdit") != string::npos ) reEdit = true;
 		};
 
-		if ( buffer.find( "//args-> " ) != string::npos )
+		if ( buffer.find( "//args-> " ) != string::npos ) // to give arguments for your executable, see mktest --help for more info
 		{
 			programsArgs = "";
 			for ( int i = 9; i < buffer.size(); i++ )
 				programsArgs+= buffer[i];
 		};
 
-		if ( buffer.find("#include") != string::npos )
+		if ( buffer.find("#include") != string::npos ) // detecting libraries for compiler autocompletion flags
 		{
 			if ( buffer.find("Xlib.h") != string::npos ){ results += "-lX11 "; };
 			if ( buffer.find("curl.h") != string::npos ){ results += "-lcurl "; };
@@ -132,15 +125,14 @@ string readFile(){
 			if ( buffer.find("SDL2_gfxPrimitives.h") != string::npos ){ results += "-lSDL2_gfx "; };
 			if ( buffer.find("SDL_ttf.h") != string::npos  ){ results += "-lSDL2_ttf "; };
 		};
-
 	};
 
 	return results;
 
 };
 
-void makeFile(string flags){
-
+void makeFile(string flags) // creating required Makefile with all the required arguments and flags for build
+{
 	ofstream mkfile("/tmp/Makefile");
 
 	mkfile << "a.out: test.cpp\n";
@@ -148,17 +140,17 @@ void makeFile(string flags){
 	mkfile << "	";//tab required!!
 	mkfile << compiler;
 	mkfile << " test.cpp ";
-	if ( flags != "" ){ mkfile << flags; };
+	if ( flags != "" )
+		mkfile << flags;
 	if ( mkfileExtras != "" )
 	{
 		mkfile << "\n";
 		mkfile << mkfileExtras;
 	};
 	mkfile.close();
-
 };
 
-void createExampleFile(string wich)
+void createExampleFile(string wich) // this funcion create a template of a predefined type of project for some libraries
 {
 	ofstream file("/tmp/test.cpp");
 
@@ -168,46 +160,40 @@ void createExampleFile(string wich)
 	if( wich.find("xlib") != string::npos ){ file << xlibTemplate; file.close(); return; };
 
 	cout << wich << " is not a valid argument for --template" << endl;
+	exit(1);
 };
 
-void mktest()
+void mktest() // main function for mktest
 {
-	string files = locateFile("/tmp");
+	string files = locateFile("/tmp"); // checking existence of files.
 
-	if ( files.find(".cpp") == std::string::npos )
-	{
-		createNecesaryFiles("test.cpp");
-	}
-	else
-	{
-		string trash = readFile();
-	};
+	if ( files.find(".cpp") == std::string::npos ) createNecesaryFiles("test.cpp");
 
-	system( defaultEditor.c_str() );
+	system( defaultEditor.c_str() ); // opeting test.cpp file for editing.
 
-	string flags = readFile();
+	string flags = readFile(); // lokking for flags and arguments for compiler, debug, reEdit and so on.
 	
-	cout << "flags: " << flags << endl;
-	cout << "args: " << programsArgs << endl;
-	cout << "CC: " << compiler << endl;
+	cout << "flags: " << flags << endl; // showing flags
+	cout << "args: " << programsArgs << endl; // showing argument for your program
+	cout << "CC: " << compiler << endl; // showing compiler to use
 	
-	makeFile(flags);
+	makeFile(flags); // creating MakeFile
 	
 	system("make -s -C /tmp");
-	string execute = "/tmp/a.out " + programsArgs;
+	string execute = "/tmp/a.out " + programsArgs; // executing your program with desired arguments
 	system( execute.c_str() );
 
-	if ( reEdit )
+	if ( reEdit ) // if reEdit is true, mktest will wait for 3 secconds to let you see the ouput of your program and then will enter again to the editor
 	{
+		flags = "";
 		sleep_for(seconds(3));
 		resetVariables();
 		mktest();
 	}
 };
 
-int main(int argc, char const *argv[])
+int main(int argc, char const *argv[]) //just for args
 {
-
 	if ( argc > 1 )
 	{
 		bool templates = false;
