@@ -1,5 +1,6 @@
 #include "defaultIncludes.hpp"
 #include "templates.hpp"
+#include "resources.hpp"
 
 using std::cout;
 using std::endl;
@@ -155,9 +156,16 @@ void createExampleFile(string wich) // this funcion create a template of a prede
 	ofstream file("/tmp/test.cpp");
 
 	if( wich.find("curl") != string::npos ){ file << curlExample; file.close(); return; };
-	if( wich.find("sdl2_image") != string::npos ){ file << sdl2_ImageExample; file.close(); return; };
 	if( wich.find("imlib2") != string::npos ){ file << imlib2Template; file.close(); return; };
 	if( wich.find("xlib") != string::npos ){ file << xlibTemplate; file.close(); return; };
+	if( wich.find("sdl2_image") != string::npos )
+	{
+		ofstream imageData ("/tmp/image.jpg");
+		for ( auto i : imageForSDl2_ImageTemplate )
+			imageData << i;
+		imageData.close();
+		file << sdl2_ImageExample; file.close(); return;
+	};
 
 	cout << wich << " is not a valid argument for --template" << endl;
 	exit(1);
