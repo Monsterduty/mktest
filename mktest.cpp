@@ -6,17 +6,27 @@ using std::cout;
 using std::endl;
 using std::string;
 using std::ofstream;
+using std::ifstream;
+using std::fstream;
 using std::istringstream;
 using std::getline;
 using std::this_thread::sleep_for;
 using std::chrono::seconds;
+using std::istreambuf_iterator;
+using std::ostreambuf_iterator;
 
 //======================================================================================
 // GLOBAL VARIALBES
 //======================================================================================
 
-string editor = "nano ";
+#ifdef __linux__
+
+string home = getenv("HOME");
 string path = "/tmp/test.cpp";
+
+#endif
+
+string editor = "nano ";
 string compiler = "g++";
 string mkfileExtras = "";
 string defaultEditor = editor+path;
@@ -171,6 +181,60 @@ void createExampleFile(string wich) // this funcion create a template of a prede
 	exit(1);
 };
 
+void saveCode ()
+{
+	ofstream file ( string( home + "/main.cpp" ).c_str() );
+	ifstream codeFile( path );
+	if ( !codeFile.is_open() )
+	{
+		cout << "code file doesn't exist!";
+		return;
+	}
+
+	istreambuf_iterator<char> begin(codeFile);
+	istreambuf_iterator<char> end;
+	ostreambuf_iterator<char> finalFile(file);
+
+	while ( begin != end )
+	{
+		*finalFile = *begin;
+		begin++;
+	}
+
+	cout << "saved at: " + string( home + "/main.cpp" ) << endl;
+	file.close();
+	codeFile.close();
+	exit(0);
+}
+
+void saveCode( string onThisPlace )
+{
+	if ( onThisPlace.size() > 1 && onThisPlace[onThisPlace.size() -1] == '/' )
+		onThisPlace.pop_back();
+
+	ofstream file( string(onThisPlace + "/main.cpp") );
+	ifstream codeFile(path);
+
+	istreambuf_iterator<char> begin(codeFile), end;
+	ostreambuf_iterator<char> finalFile(file);
+
+	while ( begin != end )
+	{
+		*finalFile = *begin;
+		begin++;
+	}
+
+	file.close();
+	codeFile.close();
+
+	if ( onThisPlace == "." )
+		cout << "save on: ./main.cpp" << endl;
+	else 
+		cout << "save on: " + onThisPlace + "/main.cpp" << endl;
+
+	exit(0);
+}
+
 void mktest() // main function for mktest
 {
 	string files = locateFile("/tmp"); // checking existence of files.
@@ -207,6 +271,8 @@ int main(int argc, char const *argv[]) //just for args
 		bool templates = false;
 		bool editor = false;
 		bool args = false;
+		bool save = false;
+
 		for ( int i = 0; i < argc; i++ )
 		{
 			string aux = argv[i];
@@ -230,11 +296,26 @@ int main(int argc, char const *argv[]) //just for args
 				args = false;
 			};
 
+			if ( save )
+			{
+				cout << argv[0] << endl;
+				saveCode(aux);
+				save = false;
+			}
+
 			if ( aux.find("--help") != string::npos ){ cout << helpMessage << endl; return 0; };
-			if ( aux.find("--template") != string::npos ){ templates = true; };
-			if ( aux.find("--editor") != string::npos ){ editor = true; };
-			if ( aux.find("--new") != string::npos ){ createNecesaryFiles("test.cpp"); };
-			if ( aux.find("--args") != string::npos ){ args = true; };
+			if ( aux.find("--template") != string::npos ) templates = true;
+			if ( aux.find("--editor") != string::npos ) editor = true;
+			if ( aux.find("--new") != string::npos ) createNecesaryFiles("test.cpp");
+			if ( aux.find("--args") != string::npos ) args = true;
+
+			if ( aux.find("--saveCode") != string::npos )
+			{
+				if ( argv[i + 1] != nullptr )
+					save = true;
+				else
+					saveCode();
+			}
 
 		};
 		if (templates){ cout << "--template require an argument!"; return 1; };

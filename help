@@ -10,6 +10,12 @@ USAGE:
     mktest
     mktest --help		  -> show this help
     mktest --new 		  -> generate new source file
+    mktest --saveCode path	  -> save the writed code on a
+    				     new file in the specified
+				     path, if the path isn't
+				     provided, it will save the
+				     code file in your home
+				     directory.
     mktest --template xlib 	  -> generate new source file with
 		      sdl2_image     code template
 		      imlib2
