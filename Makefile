@@ -1,4 +1,4 @@
-CC = g++ -std=c++17 -O3 -g3 -w
+CC = g++ -std=c++17 -w
 
 mktest: mktest.cpp makefileRule.hpp.gch terminalFontStyles.hpp.gch resources.hpp.gch defaultIncludes.hpp.gch templates.hpp.gch
 

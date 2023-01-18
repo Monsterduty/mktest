@@ -502,7 +502,15 @@ void makeFile(string flags)
 	for ( auto goal : mkfileRules )
 		depsGoals += goal.provideGoal() + " ";
 
-	makefileRule mainRule( executable, file + depsGoals, compiler + " " + flags );
+	string objFiles = "";
+	for ( auto object : mkfileRules )
+		if ( object.provideGoal().find(".o") != string::npos )
+			objFiles += " " + object.provideGoal();
+
+	//executable is the goal, ( file + depsGoals ) are all goal need to take in account
+	//and compiler with the objFiles and flags are the procedure,
+    //file g++ result in: g++ (execuable = text.cpp) (objFile = animFIle.o anotherFile.o)
+	makefileRule mainRule( executable, file + depsGoals, compiler + objFiles + " " + flags );
 
 	mkfile << mainRule.provideRule();
 
