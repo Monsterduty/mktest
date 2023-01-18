@@ -22,11 +22,19 @@ using std::ostreambuf_iterator;
 // GLOBAL VARIALBES
 //======================================================================================>
 
+#ifdef __linux__
 string path = "/tmp";
 string home = getenv("HOME");
+string executable = "/a.out";
+#endif
+
+#ifdef __WIN32
+string path = getenv("TMP");
+string home = getenv("USERPROFILE");
+string executable = "/a.exe";
+#endif
 
 string file = "/test.cpp";
-string executable = "/a.out";
 
 string editor = "nano ";
 string compiler = "g++";
@@ -42,53 +50,53 @@ vector<makefileRule> mkfileRules;
 
 void help()
 {
-	cout << TEXT_GREEN TEXT_BOLD "mktest 2.0" TEXT_RESET << endl;
+	cout << TEXT_GREEN << TEXT_BOLD "mktest 2.0" << TEXT_RESET << endl;
 	cout << "	simple tool for faster c++ project and test on terminal" << endl << endl;
 
-	cout << TEXT_GREEN TEXT_BOLD "USAGE:" TEXT_RESET << endl;
-	cout << "	mktest" TEXT_BLUE TEXT_BOLD " -> " TEXT_RESET "for it's own create a test.cpp file with a Makefile." << endl;
-	cout << "	mktest" TEXT_BOLD TEXT_YELLOW " --new <name> " TEXT_BLUE "-> " TEXT_RESET "create a new file with a optional name." << endl;
-	cout << "	mktest" TEXT_BOLD TEXT_YELLOW " --keep " TEXT_BLUE "-> " TEXT_RESET "if you create a new file, when you put this" << endl;
+	cout << TEXT_GREEN << TEXT_BOLD << "USAGE:" << TEXT_RESET << endl;
+	cout << "	mktest" << TEXT_BLUE << TEXT_BOLD << " -> " << TEXT_RESET << "for it's own create a test.cpp file with a Makefile." << endl;
+	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " --new <name> " << TEXT_BLUE << "-> " << TEXT_RESET << "create a new file with a optional name." << endl;
+	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " --keep " << TEXT_BLUE << "-> " << TEXT_RESET << "if you create a new file, when you put this" << endl;
 	cout << "			 flag, it will write a comment modArg at the" << endl;
 	cout << "			 first line of your code." << endl;
-	cout << TEXT_BOLD TEXT_YELLOW "			 [" TEXT_RESET " see MODARGS for more info " TEXT_BOLD TEXT_YELLOW "]" TEXT_RESET << endl;
-	cout << "	mktest" TEXT_BOLD TEXT_YELLOW " --args <args> " TEXT_BLUE "-> " TEXT_RESET "pass args to your program." << endl;
-	cout << "	mktest" TEXT_BOLD TEXT_YELLOW " --editor <editor> " TEXT_BLUE "-> " TEXT_RESET "change the editor to edit the code." << endl;
-	cout << "	mktest" TEXT_BOLD TEXT_YELLOW " --saveProj <folder> " TEXT_BLUE "-> " TEXT_RESET "save all your code in the optional" << endl;
+	cout << TEXT_BOLD << TEXT_YELLOW << "			 [" << TEXT_RESET << " see MODARGS for more info " << TEXT_BOLD << TEXT_YELLOW << "]" << TEXT_RESET << endl;
+	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " --args <args> " << TEXT_BLUE << "-> " << TEXT_RESET << "pass args to your program." << endl;
+	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " --editor <editor> " << TEXT_BLUE << "-> " << TEXT_RESET << "change the editor to edit the code." << endl;
+	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " --saveProj <folder> " << TEXT_BLUE << "-> " << TEXT_RESET << "save all your code in the optional" << endl;
 	cout << "			 	    folder." << endl;
-	cout << "	mktest" TEXT_BOLD TEXT_YELLOW " --clearCache " TEXT_BLUE "-> " TEXT_RESET "delete the cache file." << endl;
-	cout << "	mktest" TEXT_BOLD TEXT_YELLOW " --template <template> " TEXT_BLUE "-> " TEXT_RESET "create a code file with a" << endl;
+	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " --clearCache " << TEXT_BLUE << "-> " << TEXT_RESET << "delete the cache file." << endl;
+	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " --template <template> " << TEXT_BLUE << "-> " << TEXT_RESET << "create a code file with a" << endl;
 	cout << "			  		predefined example of code." << endl;
-	cout << TEXT_BOLD TEXT_GREEN "TEMPLATES AVAILABLE:" TEXT_RESET << endl;
+	cout << TEXT_BOLD << TEXT_GREEN << "TEMPLATES AVAILABLE:" << TEXT_RESET << endl;
 	cout << "	sdl2_image, curl, imlib2, xlib." << endl << endl;
 
-	cout << TEXT_BOLD TEXT_GREEN "MODARGS:" TEXT_RESET << endl;
+	cout << TEXT_BOLD << TEXT_GREEN << "MODARGS:" << TEXT_RESET << endl;
 	cout << "	A modarg is a flag that is located in some part of your code" << endl;
 	cout << "	as a custom comentary of c/c++ to change the behaviour of" << endl;
 	cout << "	mktest at the time to handle with your code file." << endl << endl;
 
-	cout << TEXT_BOLD TEXT_CYAN "sintax:" TEXT_RESET " //mod-> <modargs>" << endl << endl;
-	cout << TEXT_BOLD TEXT_CYAN "modargs without value:" TEXT_RESET << endl << endl;
-	cout << "	//mod-> " TEXT_BOLD TEXT_YELLOW "keep " TEXT_BLUE "-> " TEXT_RESET "remember the current file as the default to edit" << endl;
+	cout << TEXT_BOLD << TEXT_CYAN << "sintax:" << TEXT_RESET << " //mod-> <modargs>" << endl << endl;
+	cout << TEXT_BOLD << TEXT_CYAN << "modargs without value:" << TEXT_RESET << endl << endl;
+	cout << "	//mod-> " << TEXT_BOLD << TEXT_YELLOW << "keep " << TEXT_BLUE << "-> " << TEXT_RESET << "remember the current file as the default to edit" << endl;
 	cout << "			the next time you execute mktest." << endl;
-	cout << "	//mod-> " TEXT_BOLD TEXT_YELLOW "reEdit " TEXT_BLUE "-> " TEXT_RESET "compile and execute your program and wait 3" << endl;
+	cout << "	//mod-> " << TEXT_BOLD << TEXT_YELLOW << "reEdit " << TEXT_BLUE << "-> " << TEXT_RESET << "compile and execute your program and wait 3" << endl;
 	cout << "			  seconds to let you see the output and enter to" << endl;
 	cout << "			  edit your code again." << endl;
-	cout << "	//mod-> " TEXT_BOLD TEXT_YELLOW "debug " TEXT_BLUE "-> " TEXT_RESET "enter to debug your executable with gdb rather" << endl;
+	cout << "	//mod-> " << TEXT_BOLD << TEXT_YELLOW << "debug " << TEXT_BLUE << "-> " << TEXT_RESET << "enter to debug your executable with gdb rather" << endl;
 	cout << "			 than run it." << endl << endl;
 
-	cout << TEXT_BOLD TEXT_CYAN "modargs with value:" TEXT_RESET << endl << endl;
+	cout << TEXT_BOLD << TEXT_CYAN << "modargs with value:" << TEXT_RESET << endl << endl;
 
-	cout << "	//mod-> " TEXT_BOLD TEXT_YELLOW "c++-> <version> " TEXT_BLUE "-> " TEXT_RESET "change the version of c++ to use." << endl;
-	cout << "	//mod-> " TEXT_BOLD TEXT_YELLOW "editor-> <editor> " TEXT_BLUE "-> " TEXT_RESET "chage the code editor to use." << endl;
-	cout << "	//mod-> " TEXT_BOLD TEXT_YELLOW "compiler-> <compiler> " TEXT_BLUE "-> " TEXT_RESET "change the compiler to use." << endl << endl;
+	cout << "	//mod-> " << TEXT_BOLD << TEXT_YELLOW << "c++-> <version> " << TEXT_BLUE << "-> " << TEXT_RESET << "change the version of c++ to use." << endl;
+	cout << "	//mod-> " << TEXT_BOLD << TEXT_YELLOW << "editor-> <editor> " << TEXT_BLUE << "-> " << TEXT_RESET << "chage the code editor to use." << endl;
+	cout << "	//mod-> " << TEXT_BOLD << TEXT_YELLOW << "compiler-> <compiler> " << TEXT_BLUE << "-> " << TEXT_RESET << "change the compiler to use." << endl << endl;
 
-	cout << TEXT_BOLD TEXT_GREEN "PROGRAM ARGUMENTS:" TEXT_RESET << endl;
+	cout << TEXT_BOLD << TEXT_GREEN << "PROGRAM ARGUMENTS:" << TEXT_RESET << endl;
 
 	cout << "	another way to pass argument to your program is to use another" << endl;
 	cout << "	custom comentary of c/c++." << endl << endl;
 
-	cout << TEXT_BOLD TEXT_CYAN "syntax: " TEXT_RESET "//args-> foo* foo*" << endl;
+	cout << TEXT_BOLD << TEXT_CYAN << "syntax: " << TEXT_RESET << "//args-> foo* foo*" << endl;
 }
 
 bool FileExist( string name )
@@ -162,7 +170,13 @@ vector<string> getListFiles( string mainFilePath )
 //reset al the variables to teir default value
 void resetVariables()
 {
-	string path = "/tmp";
+	#ifdef __linux__
+	path = "/tmp";
+	#endif
+
+	#ifdef __WIN32
+	path = getenv("TMP");
+	#endif
 
 	editor = "nano ";
 	compiler = "g++";
@@ -185,13 +199,13 @@ bool checkConflicts( string arg )
 }
 
 //error handler
-void throwError( string wrongArg, string flag, string ERROR )
+void throwError( string wrongArg, string flag, string whitchError )
 {
-	if( ERROR == "invalid" )
-		cout << TEXT_RED TEXT_BOLD << "ERROR: " << TEXT_RESET << " [ " << wrongArg << " ] is not a valid argument for " << flag << endl;
+	if( whitchError == "invalid" )
+		cout << TEXT_RED << TEXT_BOLD << "ERROR: " << TEXT_RESET << " [ " << wrongArg << " ] is not a valid argument for " << flag << endl;
 
-	if ( ERROR == "require" )
-		cout << TEXT_RED TEXT_BOLD "ERROR: " TEXT_RESET << flag << " require an argument" << endl;
+	if ( whitchError == "require" )
+		cout << TEXT_RED << TEXT_BOLD << "ERROR: " << TEXT_RESET << flag << " require an argument" << endl;
 
 	exit(1);
 }
@@ -206,7 +220,7 @@ void createNecesaryFiles(string fileName)
 			string aux = "";
 
 			//report the problem to the user and ask for what should do.
-			cout << TEXT_UNDERLINE TEXT_BOLD BG_YELLOW TEXT_BLACK "WARNING:" TEXT_RESET " [ " << fileName << " ] this file already exist." << endl;
+			cout << TEXT_UNDERLINE << TEXT_BOLD << BG_YELLOW << TEXT_BG_BLACK_BRIGHT_YELLOW << "WARNING:" << TEXT_RESET << " [ " << fileName << " ] this file already exist." << endl;
 			cout << "What should we do? [replace/edit/none]: ";
 			std::cin >> aux;
 			if ( aux.find('r') != string::npos )
@@ -371,7 +385,7 @@ void deleteFile(string File)
 	if ( search.find( name ) != string::npos )
 		std::filesystem::remove( path + File );
 	else
-		cout << TEXT_RED TEXT_BOLD << "ERROR:"  << TEXT_RESET << endl << path + File << " doesn't exist yet" << endl;
+		cout << TEXT_RED << TEXT_BOLD << "ERROR:"  << TEXT_RESET << endl << path + File << " doesn't exist yet" << endl;
 		exit(1);
 }
 
@@ -590,7 +604,7 @@ void saveCode( string onThisPlace = home + "/mktestProj" )
 	}
 
 	//report path to the user
-	cout << TEXT_YELLOW TEXT_BOLD << "save on: " << onThisPlace << TEXT_RESET << endl;
+	cout << TEXT_YELLOW << TEXT_BOLD << "save on: " << onThisPlace << TEXT_RESET << endl;
 
 	exit(0);
 }
@@ -625,9 +639,9 @@ void mktest()
 	string flags = readFile();
 	
 	//showing parameters for the program
-	cout << TEXT_YELLOW TEXT_BOLD << "flags: " << TEXT_RESET << flags << endl; // showing flags
-	cout << TEXT_YELLOW TEXT_BOLD "args: " << TEXT_RESET << programsArgs << endl; // showing argument for your program
-	cout << TEXT_YELLOW TEXT_BOLD "CC: " << TEXT_RESET << compiler << endl; // showing compiler to use
+	cout << TEXT_YELLOW << TEXT_BOLD << "flags: " << TEXT_RESET << flags << endl; // showing flags
+	cout << TEXT_YELLOW << TEXT_BOLD << "args: " << TEXT_RESET << programsArgs << endl; // showing argument for your program
+	cout << TEXT_YELLOW << TEXT_BOLD << "CC: " << TEXT_RESET << compiler << endl; // showing compiler to use
 	
 	//creating MakeFile
 	makeFile(flags);
@@ -657,6 +671,7 @@ void mktest()
 int main(int argc, char const *argv[])
 {
 	//arguments management
+
 	if ( argc > 1 )
 	{
 		for ( int i = 1; i < argc; i++ )
