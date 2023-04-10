@@ -396,7 +396,7 @@ void deleteFile(string File)
 }
 
 //read your code file for comment flags and required argument to compile
-string readFile()
+string readFile( string *recursivePreviousFlags = nullptr )
 {
 	//reset some variables and values that change again if their are nedded.
 	if ( reEdit ) reEdit = false;
@@ -407,7 +407,7 @@ string readFile()
 	ifstream reading(path+file);
 
 	//buffer to read the whole lines and a result for return the nedded flags for compile your code
-	string buffer = "", results = "";
+	string buffer = "", results = recursivePreviousFlags != nullptr ? *recursivePreviousFlags : "";
 	
 	while ( getline( reading, buffer ) )
 	{
@@ -472,14 +472,17 @@ string readFile()
 			if ( buffer.find("SDL_ttf.h") != string::npos  ) results += "-lSDL2_ttf ";
 			if ( buffer.find( "Q" ) != string::npos || buffer.find("q") != string::npos )
 			{
+				auto addMissingLibs = [&]( string libs ){ 
+					if ( results.find("-lQt6Core") == string::npos )
+							results += "-lQt6Core  ";
+					if ( results.find(libs) == string::npos )
+						results += libs + " ";
+				};
 				for ( int i = 0; i < 322; i++ )
 				{
 					if ( buffer.find( Qt6::widgetsHeaders[i] ) != string::npos )
 					{
-						if ( results.find("-lQt6Core") == string::npos )
-							results += "-lQt6Core ";
-						if ( results.find("-lQt6Widgets") == string::npos )
-							results += " -lQt6Widgets ";
+						addMissingLibs("-lQt6Widgets");
 						break;
 					}
 				}
@@ -487,10 +490,17 @@ string readFile()
 				{
 					if ( buffer.find(Qt6::concurrentHeaders[i]) != string::npos )
 					{
-						if ( results.find("-lQt6Core") == string::npos )
-							results += "-lQt6Core  ";
-						if ( results.find("-lQt6Concurrent") == string::npos )
-							results += "-lQt6Concurrent ";
+						addMissingLibs("-lQt6Concurrent");	
+						break;
+					}
+				}
+
+				for ( int i = 0; i < 341; i++ )
+				{
+					if ( buffer.find( Qt6::guiHeaders[i] ) != string::npos )
+					{
+						addMissingLibs("-lQt6Gui");
+						break;
 					}
 				}
 			}
@@ -513,7 +523,7 @@ string readFile()
 						openedFiles.push_back( path + "/" + objective );
 						string oldFile = file;
 						file = "/" + objective;
-						readFile();
+						results = readFile( &results );
 						file = oldFile;
 					};
 
@@ -690,6 +700,10 @@ void mktest()
 
 	//reading the source file for flags and arguments in code comment.
 	readFile();
+
+	//deletring readed files history, so we can provide future compiler linking
+	//flags.
+	openedFiles.clear();
 
 	//if the file name doesn't have a slash require for the full path, this will add it to the start of the string.
 	if ( file.find('/') == string::npos ) file =  '/' + file;
