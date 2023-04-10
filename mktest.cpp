@@ -1,5 +1,6 @@
 #include "defaultIncludes.hpp"
 #include "templates.hpp"
+#include "qt6Templates.hpp"
 #include "resources.hpp"
 #include "terminalFontStyles.hpp"
 #include "makefileRule.hpp"
@@ -46,6 +47,11 @@ string cacheFileName = "/mktest.cache";
 bool reEdit = false;
 vector<makefileRule> mkfileRules;
 
+//The openedFiles vector is by the momment only used by a lamba function to store a history
+//of readed files that must ignore to read twice or more!.
+//The function is called recursiveLecture( string objective ).
+vector<string> openedFiles;
+
 //======================================================================================>
 
 void help()
@@ -68,7 +74,7 @@ void help()
 	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " --template <template> " << TEXT_BLUE << "-> " << TEXT_RESET << "create a code file with a" << endl;
 	cout << "			  		predefined example of code." << endl;
 	cout << TEXT_BOLD << TEXT_GREEN << "TEMPLATES AVAILABLE:" << TEXT_RESET << endl;
-	cout << "	sdl2_image, curl, imlib2, xlib." << endl << endl;
+	cout << "	sdl2_image, curl, imlib2, xlib, qt6." << endl << endl;
 
 	cout << TEXT_BOLD << TEXT_GREEN << "MODARGS:" << TEXT_RESET << endl;
 	cout << "	A modarg is a flag that is located in some part of your code" << endl;
@@ -464,7 +470,31 @@ string readFile()
 			if ( buffer.find("SDL_mixer.h") != string::npos) results += "-lSDL2_mixer ";
 			if ( buffer.find("SDL2_gfxPrimitives.h") != string::npos ) results += "-lSDL2_gfx ";
 			if ( buffer.find("SDL_ttf.h") != string::npos  ) results += "-lSDL2_ttf ";
-		
+			if ( buffer.find( "Q" ) != string::npos || buffer.find("q") != string::npos )
+			{
+				for ( int i = 0; i < 322; i++ )
+				{
+					if ( buffer.find( Qt6::widgetsHeaders[i] ) != string::npos )
+					{
+						if ( results.find("-lQt6Core") == string::npos )
+							results += "-lQt6Core ";
+						if ( results.find("-lQt6Widgets") == string::npos )
+							results += " -lQt6Widgets ";
+						break;
+					}
+				}
+				for ( int i = 0; i < 24; i++ )
+				{
+					if ( buffer.find(Qt6::concurrentHeaders[i]) != string::npos )
+					{
+						if ( results.find("-lQt6Core") == string::npos )
+							results += "-lQt6Core  ";
+						if ( results.find("-lQt6Concurrent") == string::npos )
+							results += "-lQt6Concurrent ";
+					}
+				}
+			}
+
 			//for MakeFile rules
 			if ( buffer.find('"') != string::npos )
 			{	
@@ -474,8 +504,24 @@ string readFile()
 
 				if ( buffer.find(".h") != string::npos )
 				{ 
+					//This lamda function allows to read recursively all the file linked to our test.cpp file
+					//and it's tree hierarchy.
+					auto recursiveLecture = [&]( std::string &objective ) {
+						for ( string &item : openedFiles )
+							if ( path + "/" + objective == item )
+								return;
+						openedFiles.push_back( path + "/" + objective );
+						string oldFile = file;
+						file = "/" + objective;
+						readFile();
+						file = oldFile;
+					};
+
 					if ( FileExist( buffer ) )
 					{
+						//recursive reading to get includes.
+						recursiveLecture( buffer );
+
 						//adding Makefile rule to the vector of Makefile rules
 						mkfileRules.push_back( makefileRule( buffer + ".gch" , buffer, compiler ) );
 
@@ -490,6 +536,9 @@ string readFile()
 					 string source = buffer.substr(0, buffer.find(".h")) + ".cpp";
 					 if ( FileExist( source ) )
 					 {
+						 //recursive reading to get includes.
+						 recursiveLecture( source );
+
 					 	source = source.substr( 0, source.find(".cpp") );
 					 	mkfileRules.push_back( makefileRule( source + ".o", source + ".cpp", compiler + " -c " ) );
 
@@ -503,6 +552,9 @@ string readFile()
 			}
 		};
 	};
+
+	if ( reading.is_open() )
+		reading.close();
 
 	return results;
 };
@@ -554,6 +606,19 @@ void createExampleFile(string wich)
 		codeFile << sdl2_ImageExample; codeFile.close();
 		return;
 	};
+
+	if ( wich == "qt6" )
+	{
+		codeFile << Qt6::main_cpp;
+		codeFile.close();
+		ofstream file( path + "/window.hpp" );
+		file << Qt6::window_hpp;
+		file.close();
+		file = ofstream( path + "/window.cpp" );
+		file << Qt6::window_cpp;
+		file.close();
+		return;
+	}
 
 	//close stream.
 	codeFile.close();
