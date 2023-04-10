@@ -17,20 +17,19 @@ using std::getline;
 using std::this_thread::sleep_for;
 using std::chrono::seconds;
 using std::istreambuf_iterator;
-using std::ostreambuf_iterator;
 
 //======================================================================================>
 // GLOBAL VARIALBES
 //======================================================================================>
 
 #ifdef __linux__
-string path = "/tmp";
+string path = "/tmp/mktestDir";
 string home = getenv("HOME");
 string executable = "/a.out";
 #endif
 
 #ifdef __WIN32
-string path = getenv("TMP");
+string path = getenv("TMP") + "/mktestDir";
 string home = getenv("USERPROFILE");
 string executable = "/a.exe";
 #endif
@@ -475,6 +474,8 @@ string readFile( string *recursivePreviousFlags = nullptr )
 				auto addMissingLibs = [&]( string libs ){ 
 					if ( results.find("-lQt6Core") == string::npos )
 							results += "-lQt6Core  ";
+					if ( results.find("-std=c++17") == string::npos )
+						results += "-std=c++17 ";
 					if ( results.find(libs) == string::npos )
 						results += libs + " ";
 				};
@@ -687,6 +688,10 @@ void saveCode( string onThisPlace = home + "/mktestProj" )
 //main function for mktest
 void mktest()
 {
+	//creating working directory if doesn't exist.
+	if ( !std::filesystem::exists(path) )
+		std::filesystem::create_directory(path);
+
 	// checking existence of files.
 	string files = "";
 	for ( auto dir : std::filesystem::directory_iterator( path ) )
@@ -711,8 +716,14 @@ void mktest()
 	//this is the full command to start editing the file
 	defaultEditor = editor + path + file;
 
+	//changing working path, so editors line vim or emacs can view another files in the same sesion.
+	const string currentPath = std::filesystem::current_path().string();
+	std::filesystem::current_path( path );
+
 	 //opening test.cpp file or some one else for editing.
 	system( defaultEditor.c_str() );
+
+	std::filesystem::current_path(currentPath);
 
 	//reading again the source file for flags and arguments in code comment.
 	string flags = readFile();

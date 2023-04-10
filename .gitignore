@@ -4,3 +4,4 @@ myInstall.sh
 mktest
 ex.cpp
 ret.h
+compile_flags*
