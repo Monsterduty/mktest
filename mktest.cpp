@@ -4,6 +4,8 @@
 #include "resources.hpp"
 #include "terminalFontStyles.hpp"
 #include "makefileRule.hpp"
+#include "global.hpp"
+#include "configParser.hpp"
 
 using std::cout;
 using std::endl;
@@ -18,33 +20,16 @@ using std::this_thread::sleep_for;
 using std::chrono::seconds;
 using std::istreambuf_iterator;
 
+//=========================================>
+//LOCAL VARIABLES
+//=========================================>
+static bool verbose = false;
+static string verboseOutput = "";
+
 //======================================================================================>
 // GLOBAL VARIALBES
 //======================================================================================>
 
-#ifdef __linux__
-string path = "/tmp/mktestDir";
-string home = getenv("HOME");
-string executable = "/a.out";
-#endif
-
-#ifdef __WIN32
-string path = getenv("TMP") + "/mktestDir";
-string home = getenv("USERPROFILE");
-string executable = "/a.exe";
-#endif
-
-string file = "/test.cpp";
-
-string editor = "nano ";
-string compiler = "g++";
-string debug = "";
-string defaultEditor = "";
-string programsArgs = "";
-string modArgs = "//mod->";
-string cacheFileName = "/mktest.cache";
-bool reEdit = false;
-vector<makefileRule> mkfileRules;
 
 //The openedFiles vector is by the momment only used by a lamba function to store a history
 //of readed files that must ignore to read twice or more!.
@@ -732,7 +717,11 @@ void mktest()
 	cout << TEXT_YELLOW << TEXT_BOLD << "flags: " << TEXT_RESET << flags << endl; // showing flags
 	cout << TEXT_YELLOW << TEXT_BOLD << "args: " << TEXT_RESET << programsArgs << endl; // showing argument for your program
 	cout << TEXT_YELLOW << TEXT_BOLD << "CC: " << TEXT_RESET << compiler << endl; // showing compiler to use
-	
+
+	//showing optional information.
+	if ( verbose )
+		cout << verboseOutput;
+
 	//creating MakeFile
 	makeFile(flags);
 	
@@ -760,8 +749,10 @@ void mktest()
 
 int main(int argc, char const *argv[])
 {
-	//arguments management
+	//read config file.
+	readConfig( "config.conf" );
 
+	//arguments management
 	if ( argc > 1 )
 	{
 		for ( int i = 1; i < argc; i++ )
@@ -866,8 +857,34 @@ int main(int argc, char const *argv[])
 
 			if ( aux == "--clearCache" ) deleteFile( cacheFileName );
 			//if ( aux == "--standAlone" )
+
+			if ( aux == "--setEnv" )
+			{
+				if ( argv[i + 1] != nullptr )
+					if ( !checkConflicts( string( argv[i + 1] ) ) )
+						if ( setEnvironment( string( argv[i + 1] ) ) )
+						{
+							verboseOutput += TEXT_BOLD;
+							verboseOutput += TEXT_YELLOW;
+							verboseOutput += "enviroment: ";
+							verboseOutput += TEXT_RESET;
+							verboseOutput += string( argv[i + 1 ] ) + "\n";
+
+							verboseOutput += string(TEXT_BOLD) + string(TEXT_CYAN);
+							verboseOutput += "CPATH:" + string(TEXT_RESET) + string( std::getenv("CPATH") ) + "\n";
+						}
+					//else
+					//	throwError( string, string flag, string whitchError)
+
+				//std::cout << "current enviroment variables:" << std::endl;
+				//std::cout << "LD_LIBRARY_PATH: " << getenv("LD_LIBRARY_PATH") << std::endl;
+			}
+
+			if ( aux == "--verbose" )
+				verbose = true;
 		};
 	};
+
 	mktest();
 
 	return 0;

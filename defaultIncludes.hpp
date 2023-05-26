@@ -1,3 +1,5 @@
+#ifndef DEFAULT_INCLUDES_HPP
+#define DEFAULT_INCLUDES_HPP
 
 #include <iostream>
 #include <string>
@@ -10,3 +12,5 @@
 #include <chrono>
 #include <iterator>
 #include <algorithm>
+
+#endif

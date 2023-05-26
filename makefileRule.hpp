@@ -1,3 +1,5 @@
+#ifndef MAKEFILE_RULE
+#define MAKEFILE_RULE
 #include <string>
 #include <iostream>
 
@@ -41,3 +43,5 @@ public:
 		return ret;
 	}
 };
+
+#endif

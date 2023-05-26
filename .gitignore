@@ -1,7 +1,10 @@
 myInstall.sh
 *.gch
 *.png
+*.o
+.cache
 mktest
 ex.cpp
 ret.h
 compile_flags*
+config.conf
