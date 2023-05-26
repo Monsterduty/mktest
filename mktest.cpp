@@ -52,9 +52,13 @@ void help()
 	cout << TEXT_BOLD << TEXT_YELLOW << "			 [" << TEXT_RESET << " see MODARGS for more info " << TEXT_BOLD << TEXT_YELLOW << "]" << TEXT_RESET << endl;
 	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " --args <args> " << TEXT_BLUE << "-> " << TEXT_RESET << "pass args to your program." << endl;
 	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " --editor <editor> " << TEXT_BLUE << "-> " << TEXT_RESET << "change the editor to edit the code." << endl;
+	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " --config <file> " << TEXT_BLUE << "-> " << TEXT_RESET << "use the specified file as config file." << endl;
 	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " --saveProj <folder> " << TEXT_BLUE << "-> " << TEXT_RESET << "save all your code in the optional" << endl;
-	cout << "			 	    folder." << endl;
+	cout << "			 	      folder." << endl;
 	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " --clearCache " << TEXT_BLUE << "-> " << TEXT_RESET << "delete the cache file." << endl;
+	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " --setEnv <environment> " << TEXT_BLUE << "-> " << TEXT_RESET << "use an predefined development" << endl;
+	cout << "					 environment from a config file." << endl;
+	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " --verbose " << TEXT_BLUE "-> " << TEXT_RESET << "display detailed information." << endl;
 	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " --template <template> " << TEXT_BLUE << "-> " << TEXT_RESET << "create a code file with a" << endl;
 	cout << "			  		predefined example of code." << endl;
 	cout << TEXT_BOLD << TEXT_GREEN << "TEMPLATES AVAILABLE:" << TEXT_RESET << endl;
@@ -180,7 +184,7 @@ void resetVariables()
 //argument conflict handler
 bool checkConflicts( string arg )
 {
-	string data[] = { "--new", "--help", "--args", "--editor", "--saveProj", "--template", "clearCache", "--keep", "--standAlone" };
+	string data[] = { "--new", "--help", "--args", "--editor", "--saveProj", "--template", "clearCache", "--keep", "--standAlone", "--setEnv", "--verbose", "--config" };
 
 	for ( auto args : data )
 		if ( arg == args )
@@ -757,8 +761,27 @@ void mktest()
 
 int main(int argc, char const *argv[])
 {
+	for ( int i = 0; i < argc; i++ )
+		if ( string(argv[i]) == "--config" && argv[i+1] != nullptr )
+		{
+			if ( checkConflicts( string( argv[i+1] ) ) )
+			{
+				throwError( string( argv[i+1] ), string(argv[i]), "invalid" );
+				break;
+			}
+
+			string fileName = argv[i+1];
+
+			if ( !std::filesystem::exists( fileName ) )
+			{
+				cout << "ERROR: config file [" + fileName + "] doesn't exist!" << endl;
+				break;
+			}
+				configFile = fileName;
+		}
 	//read config file.
-	readConfig( "config.conf" );
+	if ( std::filesystem::exists(configFile) )
+		readConfig( configFile );
 
 	//arguments management
 	if ( argc > 1 )
@@ -870,17 +893,22 @@ int main(int argc, char const *argv[])
 			{
 				if ( argv[i + 1] != nullptr )
 					if ( !checkConflicts( string( argv[i + 1] ) ) )
+					{
 						if ( setEnvironment( string( argv[i + 1] ) ) )
 						{
-							verboseOutput += TEXT_BOLD;
-							verboseOutput += TEXT_YELLOW;
+							string color = string(TEXT_BOLD) + TEXT_CYAN;
+							verboseOutput += color;
 							verboseOutput += "enviroment: ";
 							verboseOutput += TEXT_RESET;
 							verboseOutput += string( argv[i + 1 ] ) + "\n";
 
-							verboseOutput += string(TEXT_BOLD) + string(TEXT_CYAN);
-							verboseOutput += "CPATH:" + string(TEXT_RESET) + string( std::getenv("CPATH") ) + "\n";
+							verboseOutput += color + "LD_LIBRARY_PATH:" + string(TEXT_RESET) + string( std::getenv("LD_LIBRARY_PATH") ) + "\n";
+							verboseOutput += color + "LIBRARY_PATH:" + string(TEXT_RESET) + string( std::getenv("LIBRARY_PATH") ) + "\n";
+							verboseOutput += color + "CPATH:" + string(TEXT_RESET) + string( std::getenv("CPATH") ) + "\n";
 						}
+						else
+							exit(1);
+					}
 					//else
 					//	throwError( string, string flag, string whitchError)
 

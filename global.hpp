@@ -7,12 +7,14 @@
 inline std::string path = "/tmp/mktestDir";
 inline std::string home = getenv("HOME");
 inline std::string executable = "/a.out";
+inline std::string configFile = home + "/.config/mktest/config.conf";
 #endif
 
 #ifdef __WIN32
 inline std::string path = getenv("TMP") + "/mktestDir";
 inline std::string home = getenv("USERPROFILE");
 inline std::string executable = "/a.exe";
+inline std::string configFile = getenv("appdata") + "/local/mktest/config.conf";
 #endif
 
 inline std::string file = "/test.cpp";
