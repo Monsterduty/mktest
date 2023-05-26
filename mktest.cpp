@@ -586,6 +586,14 @@ void makeFile(string flags)
 //this funcion create a template of a predefined type of project for some libraries
 void createExampleFile(string wich)
 {
+	//if the working directory doesn't exist, create one.
+	if ( !std::filesystem::exists(path) )
+		std::filesystem::create_directory(path);
+
+	//delete the previous content of the directory
+	for ( auto &entry : std::filesystem::directory_iterator(path) )
+		std::filesystem::remove_all(entry.path());
+
 	//stream for the current code file
 	ofstream codeFile( path + file );
 
