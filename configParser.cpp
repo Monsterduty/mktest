@@ -84,13 +84,18 @@ void readConfig( std::string file )
 				word.push_back(aux.formatedLine[i]);
 			}
 			else
-			if ( ( !checkEnclosement() && i >= aux.formatedLine.length() -1 ) || ( !checkEnclosement() && aux.formatedLine[i] == ' ' ) )
+			//if ( ( !checkEnclosement() && i >= aux.formatedLine.length() -1 ) || ( !checkEnclosement() && aux.formatedLine[i] == ' ' ) )
 			{
 				if ( i == aux.formatedLine.length()-1 && aux.formatedLine[i] != ' ' )
 					word.push_back( aux.formatedLine[i] );
 				if ( !word.empty() )
+				{
 					aux.lineElements.push_back(word);
-				word = "";
+					if ( checkEnclosement() )
+						for ( int c = 0; c < 2; c++ )
+							typeEclosement[c] = false;
+					word = "";
+				}
 			}
 
 		fileLines.push_back(aux);

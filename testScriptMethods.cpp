@@ -266,6 +266,121 @@ class environmentMethod : public baseMethod
 		return end;
 	}
 };
+
+class defaultMethod : public baseMethod
+{
+	bool end = false;
+	//bool reading = false;
+	std::vector<std::string> names = { "editor", "compiler", "c++", "template", "args" };
+	enum configNames
+	{
+		EDITOR,
+		COMPILER,
+		CPP,
+		TEMPLATES,
+		ARGS
+	};
+	std::vector<std::string> allowedSyntax = { "[","NAME","=", "STRING", "]" };
+	//std::vector<std::string> savedElements = {};
+	int step = 0;
+	int configToDefine = -1;
+public:
+	void receiveInformation( std::string element, errorMessageStruct **errorMessage ) override
+	{
+		bool error = true;
+		int errorNumber = 1;
+
+		if ( element == allowedSyntax.at(0) )
+		{
+			end = false;
+			error = false;
+		}
+
+		if ( element == allowedSyntax.back() )
+		{
+			end = true;
+			return;
+		}
+
+		for ( auto item : allowedSyntax )
+			if ( element == item )
+				error = false;
+
+		if ( allowedSyntax.at(step) == "]" &&  element != "]" )
+		{
+			step = 1;
+			configToDefine = -1;
+		}
+
+		if ( end )
+			return;
+
+		if ( allowedSyntax.at(step) == "NAME" )
+			for ( int i = 0; i < names.size(); i++ )
+				if ( names.at(i) == element )
+				{
+					error = false;
+
+					configToDefine = i;
+					step++;
+					return;
+				}
+
+		if ( allowedSyntax.at(step) == "STRING" )
+		{
+			error = false;
+			switch (configToDefine) {
+			case EDITOR:
+				editor = element + " ";
+				break;
+			case COMPILER:
+				compiler = element;
+				break;
+			case ARGS:
+				if ( element.empty() )
+				{
+					error = true;
+					break;
+				}
+				if ( element[0] == '"' )
+					element = element.substr(1, element.size());
+				if ( element.back() == '"' )
+					element = element.substr(0, element.size() - 1);
+				programsArgs = element;
+				break;
+			default:
+				error = true;
+				break;
+			}
+		}
+
+		if ( error )
+		{
+			switch (errorNumber) {
+				case 1: 
+				{
+					*errorMessage = new errorMessageStruct{
+						.errorMessage = "Syntax error: wrote [" + element + "] rather than [" + allowedSyntax.at(step) + "]",
+					};
+					break;
+				}
+				default:
+					break;
+			}
+		}
+		step++;
+	}
+	bool endMethod() override
+	{
+		if ( end )
+		{
+			step = 0;
+			configToDefine = -1;
+			//savedElements.clear();
+		}
+		return end;
+	}
+};
 //===========================>
 
 std::vector<keywordsRequirements> keyWords = {};
@@ -276,6 +391,11 @@ static void defineKeyWords( std::vector<keywordsRequirements> &objective )
 	data.keyWord = "environment";
 	data.requiredElements = { "{", "}" };
 	data.method = new environmentMethod();
+
+	objective.push_back(data);
+
+	data.keyWord = "default";
+	data.method = new defaultMethod();
 
 	objective.push_back(data);
 }
