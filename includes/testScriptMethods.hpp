@@ -1,6 +1,7 @@
 #pragma once
-#include <string>
-#include <vector>
+//#include <string>
+//#include <vector>
+#include "defaultIncludes.hpp"
 
 	//struct to determine line positions.
 struct fileStructPrototype

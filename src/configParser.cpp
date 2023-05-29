@@ -1,12 +1,13 @@
 #include "utils.hpp"
 #include "global.hpp"
-#include <iostream>
-#include <fstream>
-#include <iterator>
-#include <filesystem>
-#include <sstream>
-#include <vector>
 #include "testScriptMethods.hpp"
+//#include <iostream>
+//#include <fstream>
+//#include <iterator>
+//#include <filesystem>
+//#include <sstream>
+//#include <vector>
+#include "defaultIncludes.hpp"
 
 struct syntaxDefinition
 {

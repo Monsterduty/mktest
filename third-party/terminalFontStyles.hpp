@@ -1,5 +1,6 @@
-#include <string>
-#include <iostream>
+//#include <string>
+//#include <iostream>
+#include "defaultIncludes.hpp"
 
 #ifdef __linux__
 

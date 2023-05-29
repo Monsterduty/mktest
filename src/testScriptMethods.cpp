@@ -1,9 +1,10 @@
-#include <iostream>
 #include "global.hpp"
 #include "testScriptMethods.hpp"
 #include "programEnvironmentStruct.hpp"
-#include <vector>
 #include "utils.hpp"
+//#include <iostream>
+//#include <vector>
+#include "defaultIncludes.hpp"
 
 programEnvironmentStruct temporalStruct;
 std::vector<std::string> lineElements = {};

@@ -1,6 +1,7 @@
 
-#include <string>
-#include <vector>
+//#include <string>
+//#include <vector>
+#include "defaultIncludes.hpp"
 #include "makefileRule.hpp"
 
 #if defined(__linux__) && defined(__ANDROID__)

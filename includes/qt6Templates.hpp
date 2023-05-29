@@ -1,7 +1,8 @@
 #ifndef QT6_TEMPLATES
 #define QT6_TEMPLATES
 
-#include <string>
+//#include <string>
+#include "defaultIncludes.hpp"
 
 namespace Qt6
 {

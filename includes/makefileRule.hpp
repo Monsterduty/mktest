@@ -1,7 +1,8 @@
 #ifndef MAKEFILE_RULE
 #define MAKEFILE_RULE
-#include <string>
-#include <iostream>
+//#include <string>
+//#include <iostream>
+#include "defaultIncludes.hpp"
 
 class makefileRule
 {
