@@ -3,7 +3,21 @@
 #include <vector>
 #include "makefileRule.hpp"
 
-#ifdef __linux__
+#if defined(__linux__) && defined(__ANDROID__)
+auto getPath = [](){ 
+	std::string ret = getenv("TMPDIR");
+	if ( ret.empty() )
+	{
+		ret = getenv("HOME");
+		ret = ret.substr(0, ret.find_last_of("/")) + "/usr/tmp";
+	}
+	return ret;
+};
+inline std::string path = getPath();
+inline std::string home = getenv("HOME");
+inline std::string executable = "/a.out";
+inline std::string configFile = home + "/.config/mktest/config.conf";
+#else
 inline std::string path = "/tmp/mktestDir";
 inline std::string home = getenv("HOME");
 inline std::string executable = "/a.out";

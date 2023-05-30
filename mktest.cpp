@@ -40,7 +40,7 @@ vector<string> openedFiles;
 
 void help()
 {
-	cout << TEXT_GREEN << TEXT_BOLD "mktest 2.0" << TEXT_RESET << endl;
+	cout << TEXT_GREEN << TEXT_BOLD "mktest 2.1" << TEXT_RESET << endl;
 	cout << "	simple tool for faster c++ project and test on terminal" << endl << endl;
 
 	cout << TEXT_GREEN << TEXT_BOLD << "USAGE:" << TEXT_RESET << endl;
@@ -685,9 +685,15 @@ void saveCode( string onThisPlace = home + "/mktestProj" )
 //main function for mktest
 void mktest()
 {
+	std::error_code errorCode;
 	//creating working directory if doesn't exist.
 	if ( !std::filesystem::exists(path) )
-		std::filesystem::create_directory(path);
+		if ( !std::filesystem::create_directory(path, errorCode) )
+		{
+			cout << "ERROR: mktest couldn't create the directory at [" + path + "]\n";
+			cout << "ERROR DESCRIPTION: " + errorCode.message() << endl;
+			return;
+		}
 
 	// checking existence of files.
 	string files = "";
@@ -920,6 +926,9 @@ int main(int argc, char const *argv[])
 				verbose = true;
 		};
 	};
+
+	if ( verbose )
+		verboseOutput = string(TEXT_BOLD) + string(TEXT_CYAN) + "PROJECT FOLDER:" + string(TEXT_RESET) + path + "\n";
 
 	mktest();
 

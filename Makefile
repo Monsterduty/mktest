@@ -1,5 +1,6 @@
-#CC = clang++ -std=c++17 -w -O3 # release build
-CC = clang++ -std=c++17 -O0 -g3 # debug build
+#CC = clang++ -std=c++17 -w -O3 -static #static release build
+CC = clang++ -std=c++17 -w -O3 # release build
+#CC = clang++ -std=c++17 -O0 -g3 # debug build
 
 PRECOMPILED_HEADERS = utils.hpp.gch testScriptMethods.hpp.gch global.hpp.gch configParser.hpp.gch makefileRule.hpp.gch terminalFontStyles.hpp.gch resources.hpp.gch defaultIncludes.hpp.gch templates.hpp.gch qt6Templates.hpp.gch
 
