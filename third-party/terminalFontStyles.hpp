@@ -1,8 +1,8 @@
 //#include <string>
 //#include <iostream>
-#include "defaultIncludes.hpp"
 
 #ifdef __linux__
+#include "defaultIncludes.hpp"
 
 #define TEXT_RESET "\033[0m"
 
@@ -333,6 +333,7 @@ std::string BG_RGB( int R = 0, int G = 0, int B = 0 )
 #ifdef __WIN32
 
 #include <windows.h>
+#include "../includes/defaultIncludes.hpp"
 HANDLE TEXT_BG_CONSOLE_HANDLE = GetStdHandle(STD_OUTPUT_HANDLE);
 
 

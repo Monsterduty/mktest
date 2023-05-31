@@ -4,32 +4,36 @@
 #include "defaultIncludes.hpp"
 #include "makefileRule.hpp"
 
-#if defined(__linux__) && defined(__ANDROID__)
-auto getPath = [](){ 
-	std::string ret = getenv("TMPDIR");
-	if ( ret.empty() )
-	{
-		ret = getenv("HOME");
-		ret = ret.substr(0, ret.find_last_of("/")) + "/usr/tmp";
-	}
-	return ret;
-};
-inline std::string path = getPath();
-inline std::string home = getenv("HOME");
-inline std::string executable = "/a.out";
-inline std::string configFile = home + "/.config/mktest/config.conf";
-#else
-inline std::string path = "/tmp/mktestDir";
-inline std::string home = getenv("HOME");
-inline std::string executable = "/a.out";
-inline std::string configFile = home + "/.config/mktest/config.conf";
-#endif
+#if defined(__LINUX__)
 
-#ifdef __WIN32
-inline std::string path = getenv("TMP") + "/mktestDir";
-inline std::string home = getenv("USERPROFILE");
-inline std::string executable = "/a.exe";
-inline std::string configFile = getenv("appdata") + "/local/mktest/config.conf";
+	inline std::string path = "/tmp/mktestDir";
+	inline std::string home = getenv("HOME");
+	inline std::string executable = "/a.out";
+	inline std::string configFile = home + "/.config/mktest/config.conf";
+
+#elif defined(__linux__) && defined(__ANDROID__)
+	auto getPath = [](){ 
+		std::string ret = getenv("TMPDIR");
+		if ( ret.empty() )
+		{
+			ret = getenv("HOME");
+			ret = ret.substr(0, ret.find_last_of("/")) + "/usr/tmp";
+		}
+		return ret;
+	};
+	inline std::string path = getPath();
+	inline std::string home = getenv("HOME");
+	inline std::string executable = "/a.out";
+	inline std::string configFile = home + "/.config/mktest/config.conf";
+
+#elif defined(__WIN32)
+	#include <processenv.h>
+
+	inline std::string path = std::string(getenv("TMP")) + "/mktestDir";
+	inline std::string home = std::string(getenv("USERPROFILE"));
+	inline std::string executable = "/a.exe";
+	inline std::string configFile = std::string(getenv("appdata")) + "/mktest/config.conf";
+
 #endif
 
 inline std::string file = "/test.cpp";

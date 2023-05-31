@@ -11,7 +11,7 @@ class makefileRule
 	std::string instructions = "";
 
 public:
-	makefileRule( std::string goal, std::string source, std::string procedure )
+	makefileRule( std::string goal, std::string source, std::string procedure, std::string compiler )
 	{
 		//clean the name of the goal file
 		goal = goal.find('/') != std::string::npos ? goal.substr(1, goal.length() ) : goal;
@@ -26,7 +26,7 @@ public:
 
 		//create the structure of the rule
 		goalFile = "\n\n" + goal + ": ";
-		instructions = "	" + procedure + " " + sourceFiles.substr(0, (sourceFiles.find(' ') != std::string::npos ? sourceFiles.find(' ') : sourceFiles.length() ) );
+		instructions = "	" + compiler + " " + sourceFiles.substr(0, (sourceFiles.find(' ') != std::string::npos ? sourceFiles.find(' ') : sourceFiles.length() ) ) + procedure;
 		sourceFiles += "\n\n";
 	}
 

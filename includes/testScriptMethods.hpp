@@ -42,6 +42,8 @@ class environmentToSetClass
 		std::string name = "";
 		std::string libs = "";
 		std::string includes = "";
+		std::string paths = "";
+		std::string args = "";
 };
 
 inline std::vector<environmentToSetClass> declaredEnvironments = {};

@@ -6,6 +6,7 @@
 #include "makefileRule.hpp"
 #include "global.hpp"
 #include "configParser.hpp"
+#include "testScriptMethods.hpp"
 
 using std::cout;
 using std::endl;
@@ -24,6 +25,8 @@ using std::istreambuf_iterator;
 //LOCAL VARIABLES
 //=========================================>
 static bool verbose = false;
+static bool customCompileArgs = false;
+static string customCompileArgsString = "";
 static string verboseOutput = "";
 
 //======================================================================================>
@@ -58,11 +61,11 @@ void help()
 	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " --clearCache " << TEXT_BLUE << "-> " << TEXT_RESET << "delete the cache file." << endl;
 	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " --setEnv <environment> " << TEXT_BLUE << "-> " << TEXT_RESET << "use an predefined development" << endl;
 	cout << "					 environment from a config file." << endl;
-	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " --verbose " << TEXT_BLUE "-> " << TEXT_RESET << "display detailed information." << endl;
+	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " --verbose " << TEXT_BLUE << "-> " << TEXT_RESET << "display detailed information." << endl;
 	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " --template <template> " << TEXT_BLUE << "-> " << TEXT_RESET << "create a code file with a" << endl;
 	cout << "			  		predefined example of code." << endl;
 	cout << TEXT_BOLD << TEXT_GREEN << "TEMPLATES AVAILABLE:" << TEXT_RESET << endl;
-	cout << "	sdl2_image, curl, imlib2, xlib, qt6." << endl << endl;
+	cout << "	sdl2, sdl2_image, curl, imlib2, xlib, qt6." << endl << endl;
 
 	cout << TEXT_BOLD << TEXT_GREEN << "MODARGS:" << TEXT_RESET << endl;
 	cout << "	A modarg is a flag that is located in some part of your code" << endl;
@@ -396,6 +399,8 @@ string readFile( string *recursivePreviousFlags = nullptr )
 
 	//buffer to read the whole lines and a result for return the nedded flags for compile your code
 	string buffer = "", results = recursivePreviousFlags != nullptr ? *recursivePreviousFlags : "";
+	if ( customCompileArgs )
+		results = customCompileArgsString;
 	
 	while ( getline( reading, buffer ) )
 	{
@@ -432,7 +437,7 @@ string readFile( string *recursivePreviousFlags = nullptr )
 			if ( buffer.find(" reEdit") != string::npos ) reEdit = true;
 
 			//use language version
-			if ( buffer.find(" c++->") != string::npos )
+			if ( buffer.find(" c++->") != string::npos && !customCompileArgs )
 			{
 				if ( buffer.find( " 17" ) != string::npos ) results += "-std=c++17 ";
 			}
@@ -447,13 +452,18 @@ string readFile( string *recursivePreviousFlags = nullptr )
 		};
 
 		//detecting libraries and headers,
+		if ( !customCompileArgs )
 		if ( buffer.find("#include") != string::npos )
 		{
 			//for compiler autocompletion flags
+			#if defined(__WIN32)
+				if ( buffer.find("SDL.h") != string::npos ) results += "-lmingw32 -lSDL2main -lSDL2 ";
+			#else
+				if ( buffer.find("SDL.h") != string::npos ) results += "-lSDL2 ";
+			#endif
+			if ( buffer.find("SDL_image.h") != string::npos ) results += "-lSDL2_image ";
 			if ( buffer.find("Xlib.h") != string::npos ) results += "-lX11 ";
 			if ( buffer.find("curl.h") != string::npos ) results += "-lcurl ";
-			if ( buffer.find("SDL.h") != string::npos ) results += "-lSDL2 ";
-			if ( buffer.find("SDL_image.h") != string::npos ) results += "-lSDL2_image ";
 			if ( buffer.find("Imlib2.h") != string::npos ) results += "-lImlib2 ";
 			if ( buffer.find("SDL_mixer.h") != string::npos) results += "-lSDL2_mixer ";
 			if ( buffer.find("SDL2_gfxPrimitives.h") != string::npos ) results += "-lSDL2_gfx ";
@@ -523,7 +533,7 @@ string readFile( string *recursivePreviousFlags = nullptr )
 						recursiveLecture( buffer );
 
 						//adding Makefile rule to the vector of Makefile rules
-						mkfileRules.push_back( makefileRule( buffer + ".gch" , buffer, compiler ) );
+						mkfileRules.push_back( makefileRule( buffer + ".gch" , buffer, "",compiler ) );
 
 						//check repetitions
 					 	if ( mkfileRules.size() > 1 )
@@ -540,7 +550,7 @@ string readFile( string *recursivePreviousFlags = nullptr )
 						 recursiveLecture( source );
 
 					 	source = source.substr( 0, source.find(".cpp") );
-					 	mkfileRules.push_back( makefileRule( source + ".o", source + ".cpp", compiler + " -c " ) );
+					 	mkfileRules.push_back( makefileRule( source + ".o", source + ".cpp", "", compiler + " -c " ) );
 
 					 	if ( mkfileRules.size() > 1 )
 					 		for ( int i = 0; i < mkfileRules.size() -1; i++ )
@@ -576,7 +586,7 @@ void makeFile(string flags)
 	//executable is the goal, ( file + depsGoals ) are all goal need to take in account
 	//and compiler with the objFiles and flags are the procedure,
     //file g++ result in: g++ (execuable = text.cpp) (objFile = animFIle.o anotherFile.o)
-	makefileRule mainRule( executable, file + depsGoals, compiler + objFiles + " " + flags );
+	makefileRule mainRule( executable, file + depsGoals, objFiles + " " + flags, compiler );
 
 	mkfile << mainRule.provideRule();
 
@@ -599,15 +609,16 @@ void createExampleFile(string wich)
 		std::filesystem::remove_all(entry.path());
 
 	//stream for the current code file
-	ofstream codeFile( path + file );
+	ofstream codeFile( path + file, std::ios::out | std::ios::binary );
 
 	//templates availables
 	if( wich == "curl" ){ codeFile << curlExample; codeFile.close(); return; };
 	if( wich == "imlib2" ){ codeFile << imlib2Template; codeFile.close(); return; };
 	if( wich == "xlib" ){ codeFile << xlibTemplate; codeFile.close(); return; };
+	if ( wich == "sdl2" ){ codeFile << sdl2_example; codeFile.close(); return; }
 	if( wich == "sdl2_image" )
 	{
-		ofstream imageData ( path +"/image.jpg");
+		ofstream imageData ( path +"/image.jpg", std::ios::out | std::ios::binary);
 		for ( auto i : imageForSDl2_ImageTemplate )
 			imageData << i;
 		imageData.close();
@@ -619,10 +630,10 @@ void createExampleFile(string wich)
 	{
 		codeFile << Qt6::main_cpp;
 		codeFile.close();
-		ofstream file( path + "/window.hpp" );
+		ofstream file( path + "/window.hpp", std::ios::out | std::ios::binary );
 		file << Qt6::window_hpp;
 		file.close();
-		file = ofstream( path + "/window.cpp" );
+		file = ofstream( path + "/window.cpp", std::ios::out | std::ios::binary );
 		file << Qt6::window_cpp;
 		file.close();
 		return;
@@ -902,24 +913,43 @@ int main(int argc, char const *argv[])
 					{
 						if ( setEnvironment( string( argv[i + 1] ) ) )
 						{
-							string color = string(TEXT_BOLD) + TEXT_CYAN;
+							string color = string(TEXT_BOLD) + string(TEXT_CYAN);
 							verboseOutput += color;
 							verboseOutput += "enviroment: ";
 							verboseOutput += TEXT_RESET;
 							verboseOutput += string( argv[i + 1 ] ) + "\n";
 
-							verboseOutput += color + "LD_LIBRARY_PATH:" + string(TEXT_RESET) + string( std::getenv("LD_LIBRARY_PATH") ) + "\n";
-							verboseOutput += color + "LIBRARY_PATH:" + string(TEXT_RESET) + string( std::getenv("LIBRARY_PATH") ) + "\n";
-							verboseOutput += color + "CPATH:" + string(TEXT_RESET) + string( std::getenv("CPATH") ) + "\n";
+							verboseOutput += color + "LD_LIBRARY_PATH:" + string(TEXT_RESET) + string( std::getenv("LD_LIBRARY_PATH") != nullptr ? std::getenv("LD_LIBRARY_PATH") : "" ) + "\n";
+							verboseOutput += color + "LIBRARY_PATH:" + string(TEXT_RESET) + string( std::getenv("LIBRARY_PATH") != nullptr ? std::getenv("LIBRARY_PATH") : "" ) + "\n";
+							verboseOutput += color + "CPATH:" + string(TEXT_RESET) + string( std::getenv("CPATH") != nullptr ? std::getenv("CPATH") : "" ) + "\n";
+							for ( auto item : declaredEnvironments )
+								if ( item.name == string( argv[i + 1] ) )
+								{
+									if ( !item.paths.empty() )
+										verboseOutput += color + "PATH:" + string(TEXT_RESET) + string( std::getenv("PATH") != nullptr ? std::getenv("PATH") : "" ) + "\n";
+									if ( !item.args.empty() )
+									{
+										customCompileArgs = true;
+										customCompileArgsString = item.args;
+									}
+									break;
+								}
 						}
 						else
 							exit(1);
 					}
-					//else
-					//	throwError( string, string flag, string whitchError)
+			}
 
-				//std::cout << "current enviroment variables:" << std::endl;
-				//std::cout << "LD_LIBRARY_PATH: " << getenv("LD_LIBRARY_PATH") << std::endl;
+			if ( aux == "--compileCommands" )
+			{
+				if ( argv[i + 1] != nullptr )
+					if ( !checkConflicts( string( argv[i + 1] ) ) )
+					{
+						customCompileArgs = true;
+						customCompileArgsString = string( argv[i + 1] );
+					}
+					else
+						exit(1);
 			}
 
 			if ( aux == "--verbose" )
@@ -928,7 +958,7 @@ int main(int argc, char const *argv[])
 	};
 
 	if ( verbose )
-		verboseOutput = string(TEXT_BOLD) + string(TEXT_CYAN) + "PROJECT FOLDER:" + string(TEXT_RESET) + path + "\n";
+		verboseOutput = string(TEXT_BOLD) + string(TEXT_CYAN) + "PROJECT FOLDER:" + string(TEXT_RESET) + path + "\n" + verboseOutput;
 
 	mktest();
 

@@ -192,73 +192,121 @@ struct keywordsRequirements
 class environmentMethod : public baseMethod
 {
 	bool end = false;
-	std::vector<std::string> allowedSyntax = { "[","NAME","=", "{", "STRING", "}", "NAME", "=", "{", "STRING", "}", "]" };
-	//std::vector<bool> checks = { false, false, false, false, false, false, false };
+
+	enum FIELDS
+	{
+		LIBS,
+		INCLUDES,
+		PATHS,
+		ARGS
+	};
+
+	int configToDefine = -1;
+
+	std::vector<std::string> allowedSyntax = { "[","NAME","=", "STRING", "]" };
+	std::vector<std::string> fields = { "libs", "includes", "paths", "args" };
 	int step = 0;
 	std::vector<std::string> savedElements = {};
 	public:
 	void receiveInformation( std::string element, errorMessageStruct **errorMessage ) override
 	{
-		if ( end )
+		bool error = true;
+		int errorNumber = 1;
+
+		if ( element == allowedSyntax.at(0) )
 		{
-			//std::cout << "WARNING: entering to a terminated environment method... ABORTING" << std::endl;
-			//return;
-			//for ( int c = 0; c < checks.size(); c++ )
-			//	checks.at(c) = false;
-			savedElements.clear();
-			step = 0;
 			end = false;
+			error = false;
 		}
-		if ( savedElements.size() == 0 && element != allowedSyntax.at(0) )
+
+		if ( element == allowedSyntax.back() )
 		{
-			*errorMessage = new errorMessageStruct{
-				.errorMessage = "ERROR: the environment object must be declared with \"" + allowedSyntax.at(0) + "\" rather than \"" + element + "\"",
-			};
+			end = true;
+			step = 0;
+			int configToDefine = -1;
 			return;
 		}
-		if ( allowedSyntax.at(step) != "NAME" && allowedSyntax.at(step) != "STRING" )
+
+		for ( auto item : allowedSyntax )
+			if ( element == item )
+				error = false;
+
+		if ( allowedSyntax.at(step) == "]" &&  element != "]" )
 		{
-			//future structure verification.
-			if ( !utils::find( savedElements.begin(), savedElements.end(), allowedSyntax.at(step) ) )
-			{
-				//std::cout << "element \"" + allowedSyntax.at(step) + "\" never found" << std::endl;
-			}
-		
-			if ( element == allowedSyntax.at(step) )
-				savedElements.push_back(element);
-		}else{
-			if ( allowedSyntax.at(step) == "NAME" )
-				if ( element != "libs" && element != "includes" )
+			step = 1;
+			configToDefine = -1;
+		}
+
+		if ( end )
+			return;
+
+		if ( allowedSyntax.at(step) == "NAME" )
+			for ( int i = 0; i < fields.size(); i++ )
+				if ( fields.at(i) == element )
 				{
-					*errorMessage = new errorMessageStruct{
-						.errorMessage = "ERROR: unrecognized field [" + element + "] the alowed fields for the environmentObject are [libs] and [includes]"
-					};
+					error = false;
+
+					configToDefine = i;
+					step++;
 					return;
 				}
-			if ( allowedSyntax.at(step) == "STRING" )
-				element = element.substr( 1, element.length() - 2 );
 
-			savedElements.push_back( element );
-		}
-		if ( element == "]" )
+		if ( allowedSyntax.at(step) == "STRING" )
 		{
-			if ( savedElements.size() > 5 )
-			{
-				//any value will be saved in the last environment object declared and saved in the second step on the readConfigLanguage() function.
-				if ( savedElements.at(1) == "libs" )
-					declaredEnvironments.back().libs = savedElements.at(4);
-				if ( savedElements.at(1) == "includes" )
-					declaredEnvironments.back().includes = savedElements.at(4);
+			error = false;
+			if ( element.empty() )
+				error = true;
+			if ( element[0] == '"' )
+				element = element.substr(1, element.size());
+			if ( element.back() == '"' )
+				element = element.substr(0, element.size() - 1);
 
-				if ( savedElements.size() > 10 )
-				{
-					if ( savedElements.at(6) == "libs" )
-						declaredEnvironments.back().libs = savedElements.at(9);
-					if ( savedElements.at(6) == "includes" )
-						declaredEnvironments.back().includes = savedElements.at(9);
-				}
+			if ( !error )
+			switch (configToDefine) {
+				case LIBS:
+					declaredEnvironments.back().libs = element;
+					break;
+				case INCLUDES:
+					declaredEnvironments.back().includes = element;
+					break;
+				case PATHS:
+					declaredEnvironments.back().paths = element;
+					break;
+				case ARGS:
+					declaredEnvironments.back().args = element;
+					break;
+				default:
+					error = true;
+					break;
 			}
-			end = true;
+		}
+
+		if ( error )
+		{
+			switch (errorNumber) {
+				case 1: 
+				{
+					auto suggestion = [&]()
+					{ 
+						std::string ret = "";
+						if ( allowedSyntax.at(step) == "NAME" )
+						{
+							ret = "Allowed field names: ";
+							for( auto item : fields )
+								ret += item + ", ";
+							ret = ret.substr(0, ret.size()-2);
+						}
+						return ret;
+					};
+					*errorMessage = new errorMessageStruct{
+						.errorMessage = "Syntax error: wrote [" + element + "] rather than [" + allowedSyntax.at(step) + "]",
+						.suggestion = suggestion(),
+					};
+					break;
+				}
+				default:
+					break;
+			}
 		}
 		step++;
 	}
@@ -496,6 +544,8 @@ void readConfigLanguage( std::vector<fileStructPrototype> fileData )
 					std::cout << errorMessage->line;
 				std::cout << std::endl;
 			}
+			if ( !errorMessage->suggestion.empty() )
+				std::cout << errorMessage->suggestion << std::endl;
 			delete errorMessage;
 			exit(1);
 		}
