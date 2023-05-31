@@ -2,7 +2,7 @@
 //#include <iostream>
 
 #ifdef __linux__
-#include "defaultIncludes.hpp"
+#include "../includes/defaultIncludes.hpp"
 
 #define TEXT_RESET "\033[0m"
 

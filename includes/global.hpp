@@ -4,12 +4,13 @@
 #include "defaultIncludes.hpp"
 #include "makefileRule.hpp"
 
-#if defined(__LINUX__)
+#if defined(__linux__)
 
 	inline std::string path = "/tmp/mktestDir";
 	inline std::string home = getenv("HOME");
 	inline std::string executable = "/a.out";
 	inline std::string configFile = home + "/.config/mktest/config.conf";
+	inline std::string version = "mktest 2.0 linux";
 
 #elif defined(__linux__) && defined(__ANDROID__)
 	auto getPath = [](){ 
@@ -25,6 +26,7 @@
 	inline std::string home = getenv("HOME");
 	inline std::string executable = "/a.out";
 	inline std::string configFile = home + "/.config/mktest/config.conf";
+	inline std::string version = "mktest 2.0 android";
 
 #elif defined(__WIN32)
 	#include <processenv.h>
@@ -33,6 +35,7 @@
 	inline std::string home = std::string(getenv("USERPROFILE"));
 	inline std::string executable = "/a.exe";
 	inline std::string configFile = std::string(getenv("appdata")) + "/mktest/config.conf";
+	inline std::string version = "mktest 2.0 windows";
 
 #endif
 
@@ -48,5 +51,3 @@ inline std::string cacheFileName = "/mktest.cache";
 inline bool reEdit = false;
 inline std::vector<makefileRule> mkfileRules;
 
-struct programEnvironmentStruct;
-inline std::vector<programEnvironmentStruct*> programEnvironments = {};

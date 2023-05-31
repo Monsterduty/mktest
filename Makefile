@@ -61,13 +61,9 @@ obj/testScriptMethods.hpp.gch : ${INC_PATH}testScriptMethods.hpp ${OBJ_PATH}defa
 
 	$(CC) ${ARGS} ${INC_PATH}testScriptMethods.hpp -o ${OBJ_PATH}testScriptMethods.hpp.gch
 
-obj/testScriptMethods.o : ${OBJ_PATH}utils.hpp.gch ${OBJ_PATH}utils.o ${OBJ_PATH}programEnvironmentStruct.hpp.gch ${OBJ_PATH}testScriptMethods.hpp.gch ${SRC_PATH}testScriptMethods.cpp ${OBJ_PATH}global.hpp.gch ${OBJ_PATH}defaultIncludes.hpp.gch
+obj/testScriptMethods.o : ${OBJ_PATH}utils.hpp.gch ${OBJ_PATH}utils.o ${OBJ_PATH}testScriptMethods.hpp.gch ${SRC_PATH}testScriptMethods.cpp ${OBJ_PATH}global.hpp.gch ${OBJ_PATH}defaultIncludes.hpp.gch
 
 	$(CC) ${ARGS} -c ${SRC_PATH}testScriptMethods.cpp -o ${OBJ_PATH}testScriptMethods.o
-
-obj/programEnvironmentStruct.hpp.gch : ${INC_PATH}programEnvironmentStruct.hpp ${OBJ_PATH}defaultIncludes.hpp.gch
-
-	$(CC) ${ARGS} ${INC_PATH}programEnvironmentStruct.hpp -o ${OBJ_PATH}programEnvironmentStruct.hpp.gch
 
 obj/utils.hpp.gch : ${INC_PATH}utils.hpp ${OBJ_PATH}defaultIncludes.hpp.gch
 

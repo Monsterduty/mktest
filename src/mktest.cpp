@@ -1,4 +1,4 @@
-#include "defaultIncludes.hpp"
+//#include "defaultIncludes.hpp"
 #include "templates.hpp"
 #include "qt6Templates.hpp"
 #include "resources.hpp"
@@ -62,6 +62,7 @@ void help()
 	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " --setEnv <environment> " << TEXT_BLUE << "-> " << TEXT_RESET << "use an predefined development" << endl;
 	cout << "					 environment from a config file." << endl;
 	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " --verbose " << TEXT_BLUE << "-> " << TEXT_RESET << "display detailed information." << endl;
+	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " -v " << TEXT_BLUE << "-> " << TEXT_RESET << "show program version and platform." << endl;
 	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " --template <template> " << TEXT_BLUE << "-> " << TEXT_RESET << "create a code file with a" << endl;
 	cout << "			  		predefined example of code." << endl;
 	cout << TEXT_BOLD << TEXT_GREEN << "TEMPLATES AVAILABLE:" << TEXT_RESET << endl;
@@ -187,7 +188,7 @@ void resetVariables()
 //argument conflict handler
 bool checkConflicts( string arg )
 {
-	string data[] = { "--new", "--help", "--args", "--editor", "--saveProj", "--template", "clearCache", "--keep", "--standAlone", "--setEnv", "--verbose", "--config" };
+	string data[] = { "--new", "--help", "--args", "--editor", "--saveProj", "--template", "clearCache", "--keep", "--standAlone", "--setEnv", "--verbose", "--config", "--compileCommands", "-v" };
 
 	for ( auto args : data )
 		if ( arg == args )
@@ -778,6 +779,13 @@ void mktest()
 
 int main(int argc, char const *argv[])
 {
+	for ( int i = 0; i < argc; i++ )
+		if ( string( argv[i] ) == "-v" )
+		{
+			std::cout << version << std::endl;
+			return 0;
+		}
+
 	for ( int i = 0; i < argc; i++ )
 		if ( string(argv[i]) == "--config" && argv[i+1] != nullptr )
 		{

@@ -9,27 +9,6 @@
 //#include <vector>
 #include "defaultIncludes.hpp"
 
-struct syntaxDefinition
-{
-	std::string name = "";
-	std::vector<std::string> fields = {};
-	void (*processInfo)( bool*, std::string*, std::vector<std::string>*, errorMessageStruct* ) = nullptr;
-};
-
-std::vector<syntaxDefinition> syntax = {
-	syntaxDefinition{ "environment", { "libs", "includes" }, environmentObject }
-};
-
-void removeChars( std::string &line, const char remove )
-{
-	while( line.find(remove) != std::string::npos )
-	{
-		size_t pos = line.find(remove);
-		std::string aux = line.substr( 0, pos );
-		line = aux + line.substr( pos + 1, line.length() );
-	}
-}
-
 static std::string formatString( std::string line )
 {
 	utils::keepStringStructure(" { ", "{", line);
@@ -40,7 +19,6 @@ static std::string formatString( std::string line )
 	utils::replaceByString("\t", " ", line );
 	return line;
 }
-
 
 void readConfig( std::string file )
 {
