@@ -43,7 +43,7 @@ vector<string> openedFiles;
 
 void help()
 {
-	cout << TEXT_GREEN << TEXT_BOLD "mktest 2.1" << TEXT_RESET << endl;
+	cout << TEXT_GREEN << TEXT_BOLD "mktest 3.0" << TEXT_RESET << endl;
 	cout << "	simple tool for faster c++ project and test on terminal" << endl << endl;
 
 	cout << TEXT_GREEN << TEXT_BOLD << "USAGE:" << TEXT_RESET << endl;
