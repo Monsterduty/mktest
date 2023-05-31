@@ -6,13 +6,14 @@
 
 #if defined(__linux__)
 
+#ifndef __ANDROID__
 	inline std::string path = "/tmp/mktestDir";
 	inline std::string home = getenv("HOME");
 	inline std::string executable = "/a.out";
 	inline std::string configFile = home + "/.config/mktest/config.conf";
 	inline std::string version = "mktest 3.0 linux";
 
-#elif defined(__linux__) && defined(__ANDROID__)
+#else
 	auto getPath = [](){ 
 		std::string ret = getenv("TMPDIR");
 		if ( ret.empty() )
@@ -28,8 +29,11 @@
 	inline std::string configFile = home + "/.config/mktest/config.conf";
 	inline std::string version = "mktest 3.0 android";
 
-#elif defined(__WIN32)
-	#include <processenv.h>
+#endif //android
+#endif // linux
+
+#ifdef __WIN32
+#include <processenv.h>
 
 	inline std::string path = std::string(getenv("TMP")) + "/mktestDir";
 	inline std::string home = std::string(getenv("USERPROFILE"));
