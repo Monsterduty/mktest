@@ -817,9 +817,19 @@ int main(int argc, char const *argv[])
 
 			if ( aux == "--new" )
 			{
+				if ( !std::filesystem::exists(path) )
+					std::filesystem::create_directory(path);
+				if ( !std::filesystem::exists(path) )
+				{
+					cout << TEXT_RED << TEXT_BOLD << "ERROR: " << TEXT_RESET << "could not create the main working directory at: " << path << endl;
+					cout << "where: [--new] argument handler position" << endl;
+					return 0;
+				}
+
 				if ( argv[i + 1] != nullptr ) aux = argv[i+1];
 
-				checkConflicts(aux) ? createNecesaryFiles("test.cpp") : createNecesaryFiles(aux);		
+
+				!checkConflicts(aux) ? createNecesaryFiles(aux) : createNecesaryFiles("test.cpp");
 			}
 
 			if ( aux == "--args" )
@@ -831,6 +841,11 @@ int main(int argc, char const *argv[])
 
 			if ( aux == "--keep" )
 			{
+				if ( !std::filesystem::exists(path) )
+				{
+					cout << "not working directoty to keep file" << endl;
+					continue;
+				}
 				modArgs += " keep";
 				if ( file != "/test.cpp" )
 				{
@@ -951,6 +966,7 @@ int main(int argc, char const *argv[])
 			if ( aux == "--compileCommands" )
 			{
 				if ( argv[i + 1] != nullptr )
+				{
 					if ( !checkConflicts( string( argv[i + 1] ) ) )
 					{
 						customCompileArgs = true;
@@ -958,6 +974,7 @@ int main(int argc, char const *argv[])
 					}
 					else
 						exit(1);
+				}
 			}
 
 			if ( aux == "--verbose" )
