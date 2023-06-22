@@ -103,9 +103,8 @@ bool FileExist( string name )
 		name = "/" + name;
 
 	std::filesystem::path file( path + name );
-	auto status = std::filesystem::symlink_status( file );
 
-	if ( std::filesystem::exists( status ) )
+	if ( std::filesystem::exists( file ) )
 		return true;
 	return false;
 }
@@ -387,8 +386,55 @@ void deleteFile(string File)
 		exit(1);
 }
 
+void resolveLibsFlags( std::string &buffer, std::vector<string> &results )
+{
+	//for compiler autocompletion flags
+	#if defined(__WIN32)
+		if ( buffer.find("SDL.h") != string::npos ) results.push_back("-lmingw32 -lSDL2main -lSDL2");
+	#else
+		if ( buffer.find("SDL.h") != string::npos ) results.push_back("-lSDL2");
+	#endif
+	if ( buffer.find("filesystem") != string::npos ) results.push_back("-std=c++17");
+	if ( buffer.find("SDL_image.h") != string::npos ) results.push_back("-lSDL2_image");
+	if ( buffer.find("Xlib.h") != string::npos ) results.push_back("-lX11");
+	if ( buffer.find("curl.h") != string::npos ) results.push_back("-lcurl");
+	if ( buffer.find("Imlib2.h") != string::npos ) results.push_back("-lImlib2");
+	if ( buffer.find("SDL_mixer.h") != string::npos) results.push_back("-lSDL2_mixer");
+	if ( buffer.find("SDL2_gfxPrimitives.h") != string::npos ) results.push_back("-lSDL2_gfx");
+	if ( buffer.find("SDL_ttf.h") != string::npos  ) results.push_back("-lSDL2_ttf");
+	if ( buffer.find( "Q" ) != string::npos || buffer.find("q") != string::npos )
+	{ 
+		results.push_back("-lQt6Core");
+		results.push_back("-std=c++17");
+		for ( int i = 0; i < 322; i++ )
+		{
+			if ( buffer.find( Qt6::widgetsHeaders[i] ) != string::npos )
+			{
+				results.push_back("-lQt6Widgets");
+				break;
+			}
+		}
+		for ( int i = 0; i < 24; i++ )
+		{
+			if ( buffer.find(Qt6::concurrentHeaders[i]) != string::npos )
+			{
+				results.push_back("-lQt6Concurrent");	
+				break;
+			}
+		}
+		for ( int i = 0; i < 341; i++ )
+		{
+			if ( buffer.find( Qt6::guiHeaders[i] ) != string::npos )
+			{
+				results.push_back("-lQt6Gui");
+				break;
+			}
+		}
+	}
+}
+
 //read your code file for comment flags and required argument to compile
-string readFile( string *recursivePreviousFlags = nullptr )
+std::vector<string> readFile( std::vector<string> *recursivePreviousFlags = nullptr )
 {
 	//reset some variables and values that change again if their are nedded.
 	if ( reEdit ) reEdit = false;
@@ -399,9 +445,14 @@ string readFile( string *recursivePreviousFlags = nullptr )
 	ifstream reading(path+file);
 
 	//buffer to read the whole lines and a result for return the nedded flags for compile your code
-	string buffer = "", results = recursivePreviousFlags != nullptr ? *recursivePreviousFlags : "";
+	string buffer = "";
+	std::vector<string> results = {};
+
+	if ( recursivePreviousFlags )
+		results = *recursivePreviousFlags;
+
 	if ( customCompileArgs )
-		results = customCompileArgsString;
+		results.push_back( customCompileArgsString );
 	
 	while ( getline( reading, buffer ) )
 	{
@@ -429,7 +480,8 @@ string readFile( string *recursivePreviousFlags = nullptr )
 			 //coplile the code with debug flags and open the executable with gdb for debug
 			if ( buffer.find(" debug") != string::npos )
 			{ 
-				results += "-g -O3 "; debug = "	gdb --se=" + path + executable + " --readnow -q\0";
+				results.push_back( "-g -O3 ");
+				debug = "\tgdb --se=" + path + executable + " --readnow -q\0";
 			};
 
 			if ( buffer.find( " keep") != string::npos ) writeCache("fileToEdit: ", file);
@@ -440,7 +492,7 @@ string readFile( string *recursivePreviousFlags = nullptr )
 			//use language version
 			if ( buffer.find(" c++->") != string::npos && !customCompileArgs )
 			{
-				if ( buffer.find( " 17" ) != string::npos ) results += "-std=c++17 ";
+				if ( buffer.find( " 17" ) != string::npos ) results.push_back("-std=c++17");
 			}
 		};
 
@@ -456,55 +508,7 @@ string readFile( string *recursivePreviousFlags = nullptr )
 		if ( !customCompileArgs )
 		if ( buffer.find("#include") != string::npos )
 		{
-			//for compiler autocompletion flags
-			#if defined(__WIN32)
-				if ( buffer.find("SDL.h") != string::npos ) results += "-lmingw32 -lSDL2main -lSDL2 ";
-			#else
-				if ( buffer.find("SDL.h") != string::npos ) results += "-lSDL2 ";
-			#endif
-			if ( buffer.find("SDL_image.h") != string::npos ) results += "-lSDL2_image ";
-			if ( buffer.find("Xlib.h") != string::npos ) results += "-lX11 ";
-			if ( buffer.find("curl.h") != string::npos ) results += "-lcurl ";
-			if ( buffer.find("Imlib2.h") != string::npos ) results += "-lImlib2 ";
-			if ( buffer.find("SDL_mixer.h") != string::npos) results += "-lSDL2_mixer ";
-			if ( buffer.find("SDL2_gfxPrimitives.h") != string::npos ) results += "-lSDL2_gfx ";
-			if ( buffer.find("SDL_ttf.h") != string::npos  ) results += "-lSDL2_ttf ";
-			if ( buffer.find( "Q" ) != string::npos || buffer.find("q") != string::npos )
-			{
-				auto addMissingLibs = [&]( string libs ){ 
-					if ( results.find("-lQt6Core") == string::npos )
-							results += "-lQt6Core  ";
-					if ( results.find("-std=c++17") == string::npos )
-						results += "-std=c++17 ";
-					if ( results.find(libs) == string::npos )
-						results += libs + " ";
-				};
-				for ( int i = 0; i < 322; i++ )
-				{
-					if ( buffer.find( Qt6::widgetsHeaders[i] ) != string::npos )
-					{
-						addMissingLibs("-lQt6Widgets");
-						break;
-					}
-				}
-				for ( int i = 0; i < 24; i++ )
-				{
-					if ( buffer.find(Qt6::concurrentHeaders[i]) != string::npos )
-					{
-						addMissingLibs("-lQt6Concurrent");	
-						break;
-					}
-				}
-
-				for ( int i = 0; i < 341; i++ )
-				{
-					if ( buffer.find( Qt6::guiHeaders[i] ) != string::npos )
-					{
-						addMissingLibs("-lQt6Gui");
-						break;
-					}
-				}
-			}
+			resolveLibsFlags(buffer, results);
 
 			//for MakeFile rules
 			if ( buffer.find('"') != string::npos )
@@ -566,6 +570,8 @@ string readFile( string *recursivePreviousFlags = nullptr )
 
 	if ( reading.is_open() )
 		reading.close();
+
+	
 
 	return results;
 };
@@ -741,7 +747,20 @@ void mktest()
 	std::filesystem::current_path(currentPath);
 
 	//reading again the source file for flags and arguments in code comment.
-	string flags = readFile();
+	std::vector<string> vectorFlags = readFile();
+	for ( int i = 0; i < vectorFlags.size(); i++ )
+		if ( std::count( vectorFlags.begin(), vectorFlags.end(), vectorFlags.at(i) ) > 1 )
+		{
+			vectorFlags.erase( vectorFlags.begin() + i );
+			i--;
+		}
+
+	std::string flags = "";
+	for ( string &item : vectorFlags )
+		if ( &item != &vectorFlags.back() )
+			flags += item + " ";
+		else
+			flags += item;
 	
 	//showing parameters for the program
 	cout << TEXT_YELLOW << TEXT_BOLD << "flags: " << TEXT_RESET << flags << endl; // showing flags
