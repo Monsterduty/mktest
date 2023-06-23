@@ -23,6 +23,10 @@ void help()
 	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " --setEnv <environment> " << TEXT_BLUE << "-> " << TEXT_RESET << "use an predefined development" << endl;
 	cout << "					 environment from a config file." << endl;
 	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " --verbose " << TEXT_BLUE << "-> " << TEXT_RESET << "display detailed information." << endl;
+	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " --daemon " << TEXT_BLUE "-> " << TEXT_RESET << "with this mktest will generate the Makefile for" << endl;
+	cout << "			   your project while codding, this feature" << endl;
+	cout << "			   allows you to use gui editors or build the project" << endl;
+	cout << "			   from the editor itself without call mktest every time" << endl;
 	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " -v " << TEXT_BLUE << "-> " << TEXT_RESET << "show program version and platform." << endl;
 	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " --template <template> " << TEXT_BLUE << "-> " << TEXT_RESET << "create a code file with a" << endl;
 	cout << "			  		predefined example of code." << endl;

@@ -29,8 +29,10 @@ using std::istreambuf_iterator;
 //=========================================>
 static bool verbose = false;
 static bool customCompileArgs = false;
+static bool generateMakefileWhileCodding = false;
 static string customCompileArgsString = "";
 static string verboseOutput = "";
+static std::thread makeFileGenerationThread;
 
 //======================================================================================>
 // GLOBAL VARIALBES
@@ -339,40 +341,52 @@ std::vector<string> readFile( std::vector<string> *recursivePreviousFlags = null
 		//detecting mod args
 		if ( buffer.find("//mod-> ") != string::npos )
 		{
+			std::vector<string> fileModArgs = {};
+			string word = "";
+			for ( char &c : buffer )
+				if ( c != ' ' && c != '\t' && &c != &buffer.back() )
+					word.push_back(c);
+				else
+				{
+					if ( word == "" )
+						continue;
+					if ( &c == &buffer.back() )
+						word.push_back(c);
+					fileModArgs.push_back(word);
+					word.clear();
+				}
+
 			//the kind of editor if was specified, if isn't specified by default will use nano
-			if ( buffer.find(" editor-> ") != string::npos )
-			{	
-				if ( buffer.find(" emacs") != string::npos ) editor = "emacs ";
-				if ( buffer.find(" nvim") != string::npos ) editor = "nvim ";
-				if ( buffer.find(" vim") != string::npos ) editor = "vim ";
-				if ( buffer.find(" vi") != string::npos ) editor = "vi ";
+			if ( utils::find( fileModArgs.begin(), fileModArgs.end(), "editor->" ) )
+			{
+				size_t pos = utils::whereIs( fileModArgs.begin(), fileModArgs.end(), "editor->" );
+				editor = fileModArgs.size() >= pos ? fileModArgs.at(pos+1) + " " : editor;
 			};
 
 			//the compiler to use, if isn't specified by default will use g++
-			if( buffer.find( " compiler-> " ) != string::npos )
+			if( utils::find( fileModArgs.begin(), fileModArgs.end(), "compiler->" ) )
 			{
-				if ( buffer.find(" gcc") != string::npos ) compiler = "gcc";
-				if ( buffer.find(" g++") != string::npos ) compiler = "g++";
-				if ( buffer.find(" clang") != string::npos ) compiler = "clang";
-				if ( buffer.find(" clang++") != string::npos ) compiler = "clang++";
+				size_t pos = utils::whereIs( fileModArgs.begin(), fileModArgs.end(), "compiler->" );
+				compiler = fileModArgs.size() >= pos ? fileModArgs.at(pos+1) + " " : compiler;
 			};
 
 			 //coplile the code with debug flags and open the executable with gdb for debug
-			if ( buffer.find(" debug") != string::npos )
+			if ( utils::find( fileModArgs.begin(), fileModArgs.end(), "debug" ) )
 			{ 
-				results.push_back( "-g -O3 ");
+				results.push_back( "-g -O3");
 				debug = "\tgdb --se=" + path + executable + " --readnow -q\0";
 			};
 
-			if ( buffer.find( " keep") != string::npos ) writeCache("fileToEdit: ", file);
+			if ( utils::find( fileModArgs.begin(), fileModArgs.end(),"keep") ) writeCache("fileToEdit: ", file);
 
 			//active the [ reEdit ] variable for not get out from the mktest program
-			if ( buffer.find(" reEdit") != string::npos ) reEdit = true;
+			if ( utils::find( fileModArgs.begin(), fileModArgs.end(),"reEdit") ) reEdit = true;
 
 			//use language version
-			if ( buffer.find(" c++->") != string::npos && !customCompileArgs )
+			if ( utils::find( fileModArgs.begin(), fileModArgs.end() ,"c++->") && !customCompileArgs )
 			{
-				if ( buffer.find( " 17" ) != string::npos ) results.push_back("-std=c++17");
+				size_t pos = utils::whereIs( fileModArgs.begin(), fileModArgs.end(), "c++->" );
+				results.push_back( fileModArgs.size() >= pos ? "-std=c++" + fileModArgs.at(pos+1) : "" );
 			}
 		};
 
@@ -552,6 +566,25 @@ void saveCode( string onThisPlace = home + "/mktestProj" )
 	exit(0);
 }
 
+std::string getCodeFlags()
+{
+	std::vector<string> vectorFlags = readFile();
+	for ( int i = 0; i < vectorFlags.size(); i++ )
+		if ( std::count( vectorFlags.begin(), vectorFlags.end(), vectorFlags.at(i) ) > 1 )
+		{
+			vectorFlags.erase( vectorFlags.begin() + i );
+			i--;
+		}
+
+	std::string flags = "";
+	for ( string &item : vectorFlags )
+		if ( &item != &vectorFlags.back() )
+			flags += item + " ";
+		else
+			flags += item;
+	return flags;
+}
+
 //main function for mktest
 void mktest()
 {
@@ -593,26 +626,33 @@ void mktest()
 	const string currentPath = std::filesystem::current_path().string();
 	std::filesystem::current_path( path );
 
-	 //opening test.cpp file or some one else for editing.
+	std::string flags = "";
+
+	//if this is activated, mktest will generate and update the makefile for your code while you are codding.
+	bool generating = generateMakefileWhileCodding;
+	if ( generateMakefileWhileCodding )
+		makeFileGenerationThread = std::thread( [&](){
+			while ( generating )
+			{
+				flags = getCodeFlags();
+				generateMakeFile(flags);
+			}
+		} );	
+
+	//opening test.cpp file or some one else for editing.
 	system( defaultEditor.c_str() );
+
+	if ( generateMakefileWhileCodding )
+	{
+		generating = false;
+		if ( makeFileGenerationThread.joinable() )
+			makeFileGenerationThread.detach();
+	}
 
 	std::filesystem::current_path(currentPath);
 
 	//reading again the source file for flags and arguments in code comment.
-	std::vector<string> vectorFlags = readFile();
-	for ( int i = 0; i < vectorFlags.size(); i++ )
-		if ( std::count( vectorFlags.begin(), vectorFlags.end(), vectorFlags.at(i) ) > 1 )
-		{
-			vectorFlags.erase( vectorFlags.begin() + i );
-			i--;
-		}
-
-	std::string flags = "";
-	for ( string &item : vectorFlags )
-		if ( &item != &vectorFlags.back() )
-			flags += item + " ";
-		else
-			flags += item;
+	flags = getCodeFlags();
 	
 	//showing parameters for the program
 	cout << TEXT_YELLOW << TEXT_BOLD << "flags: " << TEXT_RESET << flags << endl; // showing flags
@@ -646,6 +686,9 @@ void mktest()
 		cout << endl;
 		mktest();
 	}
+
+	if ( makeFileGenerationThread.joinable() )
+		makeFileGenerationThread.join();
 };
 
 int main(int argc, char const *argv[])
@@ -854,6 +897,9 @@ int main(int argc, char const *argv[])
 
 			if ( aux == "--verbose" )
 				verbose = true;
+
+			if ( aux == "--daemon" )
+				generateMakefileWhileCodding = true;
 		};
 	};
 
