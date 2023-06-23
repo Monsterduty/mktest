@@ -2,9 +2,9 @@
 #CC = g++ -std=c++17 -w -O3 # release build
 CC = clang++ -std=c++17 -O0 -g3 # debug build
 
-PRECOMPILED_HEADERS = obj/utils.hpp.gch obj/testScriptMethods.hpp.gch obj/global.hpp.gch obj/configParser.hpp.gch obj/makefileRule.hpp.gch obj/terminalFontStyles.hpp.gch obj/resources.hpp.gch obj/defaultIncludes.hpp.gch obj/templates.hpp.gch obj/qt6Templates.hpp.gch
+PRECOMPILED_HEADERS = obj/utils.hpp.gch obj/testScriptMethods.hpp.gch obj/global.hpp.gch obj/configParser.hpp.gch obj/makefileRule.hpp.gch obj/terminalFontStyles.hpp.gch obj/resources.hpp.gch obj/defaultIncludes.hpp.gch obj/templates.hpp.gch obj/qt6Templates.hpp.gch obj/libsResolver.hpp.gch obj/mktestInfoOutput.hpp.gch
 
-OBJ_FILES = obj/utils.o obj/testScriptMethods.o obj/configParser.o obj/mktest.o
+OBJ_FILES = obj/utils.o obj/testScriptMethods.o obj/configParser.o obj/mktest.o obj/libsResolver.o obj/makefileRule.o obj/mktestInfoOutput.o
 
 OBJ_PATH = obj/
 SRC_PATH = src/
@@ -17,7 +17,7 @@ mktest: $(PRECOMPILED_HEADERS) $(OBJ_FILES)
 
 	$(CC) ${ARGS} -I${OBJ_PATH} -I${INC_PATH} $(OBJ_FILES) -o mktest
 
-obj/mktest.o : ${SRC_PATH}mktest.cpp ${OBJ_PATH}templates.hpp.gch ${OBJ_PATH}qt6Templates.hpp.gch ${OBJ_PATH}resources.hpp.gch ${OBJ_PATH}terminalFontStyles.hpp.gch ${OBJ_PATH}makefileRule.hpp.gch ${OBJ_PATH}global.hpp.gch ${OBJ_PATH}configParser.hpp.gch ${OBJ_PATH}defaultIncludes.hpp.gch
+obj/mktest.o : ${SRC_PATH}mktest.cpp ${OBJ_PATH}templates.hpp.gch ${OBJ_PATH}qt6Templates.hpp.gch ${OBJ_PATH}resources.hpp.gch ${OBJ_PATH}terminalFontStyles.hpp.gch ${OBJ_PATH}makefileRule.hpp.gch ${OBJ_PATH}global.hpp.gch ${OBJ_PATH}configParser.hpp.gch ${OBJ_PATH}defaultIncludes.hpp.gch ${OBJ_PATH}libsResolver.hpp.gch ${OBJ_PATH}mktestInfoOutput.hpp.gch ${OBJ_PATH}utils.hpp.gch
 
 	$(CC) ${ARGS} -c ${SRC_PATH}mktest.cpp -o ${OBJ_PATH}mktest.o
 
@@ -40,6 +40,10 @@ obj/terminalFontStyles.hpp.gch : ${THIRD_PARTY_PATH}terminalFontStyles.hpp ${OBJ
 obj/makefileRule.hpp.gch: ${INC_PATH}makefileRule.hpp ${OBJ_PATH}defaultIncludes.hpp.gch
 
 	$(CC) ${ARGS} ${INC_PATH}makefileRule.hpp -o ${OBJ_PATH}makefileRule.hpp.gch
+
+${OBJ_PATH}makefileRule.o: ${SRC_PATH}makefileRule.cpp ${OBJ_PATH}makefileRule.hpp.gch ${OBJ_PATH}global.hpp.gch
+
+	${CC} ${ARGS} -c ${SRC_PATH}makefileRule.cpp -o ${OBJ_PATH}makefileRule.o
 
 obj/qt6Templates.hpp.gch : ${INC_PATH}qt6Templates.hpp ${OBJ_PATH}defaultIncludes.hpp.gch
 
@@ -72,6 +76,22 @@ obj/utils.hpp.gch : ${INC_PATH}utils.hpp ${OBJ_PATH}defaultIncludes.hpp.gch
 obj/utils.o : ${SRC_PATH}utils.cpp ${OBJ_PATH}utils.hpp.gch
 
 	$(CC) ${ARGS} -c ${SRC_PATH}utils.cpp -o ${OBJ_PATH}utils.o
+
+${OBJ_PATH}libsResolver.hpp.gch: ${INC_PATH}libsResolver.hpp ${OBJ_PATH}defaultIncludes.hpp.gch
+
+	$(CC) ${ARGS} ${INC_PATH}libsResolver.hpp -o ${OBJ_PATH}libsResolver.hpp.gch
+
+${OBJ_PATH}libsResolver.o: ${SRC_PATH}libsResolver.cpp ${OBJ_PATH}libsResolver.hpp.gch ${OBJ_PATH}qt6Templates.hpp.gch
+
+	${CC} ${ARGS} -c ${SRC_PATH}libsResolver.cpp -o ${OBJ_PATH}libsResolver.o
+
+${OBJ_PATH}mktestInfoOutput.hpp.gch: ${INC_PATH}mktestInfoOutput.hpp ${OBJ_PATH}defaultIncludes.hpp.gch
+
+	${CC} ${ARGS} ${INC_PATH}mktestInfoOutput.hpp -o ${OBJ_PATH}mktestInfoOutput.hpp.gch
+
+${OBJ_PATH}mktestInfoOutput.o: ${SRC_PATH}mktestInfoOutput.cpp ${OBJ_PATH}mktestInfoOutput.hpp.gch ${OBJ_PATH}defaultIncludes.hpp.gch
+
+	${CC} ${ARGS} -c ${SRC_PATH}mktestInfoOutput.cpp -o ${OBJ_PATH}mktestInfoOutput.o
 
 clean:
 

@@ -1,4 +1,20 @@
 #include "utils.hpp"
+#include "global.hpp"
+
+bool utils::FileExist( std::string name )
+{
+	if ( name == "" )
+		return false;
+
+	if ( name.find('/') == std::string::npos )
+		name = "/" + name;
+
+	std::filesystem::path file( path + name );
+
+	if ( std::filesystem::exists( file ) )
+		return true;
+	return false;
+}
 
 int utils::compString( std::string &s1, std::string &s2 )
 {

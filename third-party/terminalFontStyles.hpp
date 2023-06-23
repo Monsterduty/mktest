@@ -318,12 +318,12 @@
 #define TEXT_BG_BRIGHT_YELLOW_BRIGHT_WHITE TEXT_BRIGHT_YELLOW BG_BRIGHT_WHITE
 #define TEXT_BG_BRIGHT_WHITE_BRIGHT_WHITE TEXT_BRIGHT_WHITE BG_BRIGHT_WHITE
 
-std::string TEXT_RGB( int R = 0, int G = 0, int B = 0 )
+inline std::string TEXT_RGB( int R = 0, int G = 0, int B = 0 )
 {
 	return "\033[38;2;" + std::to_string(R) + ";" + std::to_string(G) + ";" + std::to_string(B) + "m";
 }
 
-std::string BG_RGB( int R = 0, int G = 0, int B = 0 )
+inline std::string BG_RGB( int R = 0, int G = 0, int B = 0 )
 {
 	return "\033[48;2;" + std::to_string(R) + ";" + std::to_string(G) + ";" + std::to_string(B) + "m";
 }
@@ -337,7 +337,7 @@ std::string BG_RGB( int R = 0, int G = 0, int B = 0 )
 HANDLE TEXT_BG_CONSOLE_HANDLE = GetStdHandle(STD_OUTPUT_HANDLE);
 
 
-const char *TEXT_BG_SET( int color )
+inline const char *TEXT_BG_SET( int color )
 {
 	SetConsoleTextAttribute(TEXT_BG_CONSOLE_HANDLE, color);
 
@@ -660,12 +660,12 @@ const char *TEXT_BG_SET( int color )
 
 #define TEXT_RESET TEXT_BG_WHITE_BLACK
 
-std::string TEXT_RGB( int R = 0, int G = 0, int B = 0 )
+inline std::string TEXT_RGB( int R = 0, int G = 0, int B = 0 )
 {
 	return "";
 }
 
-std::string BG_RGB( int R = 0, int G = 0, int B = 0 )
+inline std::string BG_RGB( int R = 0, int G = 0, int B = 0 )
 {
 	return "";
 }
