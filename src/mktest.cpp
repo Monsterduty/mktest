@@ -126,15 +126,13 @@ void resetVariables()
 //argument conflict handler
 bool checkConflicts( string arg )
 {
-	string data[] = { "--new", "--help", "--args", "--editor", "--saveProj", "--template", "clearCache", "--keep", "--standAlone", "--setEnv", "--verbose", "--config", "--compileCommands", "-v" };
+	string data[] = { "--new", "--help", "--args", "--editor", "--saveProj", "--template", "clearCache", "--keep", "--standAlone", "--setEnv", "--verbose", "--config", "--compileCommands", "-v", "--path", "--daemon" };
 
 	for ( auto args : data )
 		if ( arg == args )
 			return true;
 	return false;
 }
-
-
 
 //file creation handler
 void createNecesaryFiles(string fileName)
@@ -722,6 +720,49 @@ int main(int argc, char const *argv[])
 		{
 			std::cout << version << std::endl;
 			return 0;
+		}
+
+	for ( int i = 0; i < argc; i++ )
+		if ( string( argv[i] ) == "--path" )
+		{
+			if ( argv[i] == nullptr )
+			{
+				throwMessage( "[--path] requires an argument", THROW_CODE::ERROR );
+				return 1;
+			}
+
+			string newPath = argv[i + 1];
+
+			if ( checkConflicts( newPath ) )
+			{
+				throwMessage( "[" + newPath + "] is not a valid argument for [--path]" , THROW_CODE::ERROR);
+				return 0;
+			}
+			if ( !std::filesystem::exists( newPath ) )
+			{
+				throwMessage( "the path [" + newPath + "] doesn't exits!\nWhat should we do? [create/exit]: ", THROW_CODE::WARNING );
+				string response = "";
+				std::cin >> response;
+				if ( response.empty() )
+					return 0;
+
+				if ( response.at(0) == 'c' )
+				{
+					std::filesystem::create_directory( newPath );
+					if ( !std::filesystem::exists( newPath ) )
+					{
+						throwMessage( "couldn't create the new directory on [" + newPath + "]", THROW_CODE::ERROR );
+						return 0;
+					}
+				}
+				else
+				{
+					cout << "\naborting\n";
+					return 0;
+				}
+
+				path = newPath;
+			}
 		}
 
 	for ( int i = 0; i < argc; i++ )

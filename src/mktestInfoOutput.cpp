@@ -1,5 +1,6 @@
 #include "defaultIncludes.hpp"
 #include "terminalFontStyles.hpp"
+#include "mktestInfoOutput.hpp"
 
 void help()
 {
@@ -24,9 +25,12 @@ void help()
 	cout << "					 environment from a config file." << endl;
 	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " --verbose " << TEXT_BLUE << "-> " << TEXT_RESET << "display detailed information." << endl;
 	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " --daemon " << TEXT_BLUE "-> " << TEXT_RESET << "with this mktest will generate the Makefile for" << endl;
+	cout << " 	mktest" << TEXT_BOLD << TEXT_YELLOW << " --compileCommands <flags>" << TEXT_BLUE << "-> " << TEXT_RESET << "pass custom compile commands" << endl;
+	cout << "					   for your project." << endl;
 	cout << "			   your project while codding, this feature" << endl;
 	cout << "			   allows you to use gui editors or build the project" << endl;
-	cout << "			   from the editor itself without call mktest every time" << endl;
+	cout << "			   from the editor itself without call mktest every time." << endl;
+	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " --path <directory>" << TEXT_BLUE << "-> " << TEXT_RESET << "change the working directory of mktest." << endl;
 	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " -v " << TEXT_BLUE << "-> " << TEXT_RESET << "show program version and platform." << endl;
 	cout << "	mktest" << TEXT_BOLD << TEXT_YELLOW << " --template <template> " << TEXT_BLUE << "-> " << TEXT_RESET << "create a code file with a" << endl;
 	cout << "			  		predefined example of code." << endl;
@@ -72,4 +76,18 @@ void throwError( std::string wrongArg, std::string flag, std::string whitchError
 		std::cout << TEXT_RED << TEXT_BOLD << "ERROR: " << TEXT_RESET << flag << " require an argument" << std::endl;
 
 	exit(1);
+}
+
+void throwMessage( std::string message, THROW_CODE messageType )
+{
+	switch (messageType) {
+		case THROW_CODE::ERROR:
+			std::cout << TEXT_RED << TEXT_BOLD << "ERROR: " << TEXT_RESET;
+			break;
+		case THROW_CODE::WARNING:
+			std::cout << TEXT_BG_BLACK_BRIGHT_YELLOW << TEXT_BOLD << "WARNING:" << TEXT_RESET << " ";
+		default:
+			break;
+	}
+	std::cout << message << std::endl;
 }
