@@ -52,6 +52,12 @@ inline std::string defaultEditor = "";
 inline std::string programsArgs = "";
 inline std::string modArgs = "//mod->";
 inline std::string cacheFileName = "/mktest.cache";
+inline std::string customCompileArgsString = "";
+inline std::string verboseOutput = "";
 inline bool reEdit = false;
 inline std::vector<makefileRule> mkfileRules;
-
+inline std::vector<std::string> openedFiles;
+inline bool verbose = false;
+inline bool customCompileArgs = false;
+inline bool generateMakefileWhileCodding = false;
+inline bool generateCompileCommands = true;
