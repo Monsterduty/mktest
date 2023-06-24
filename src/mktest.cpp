@@ -30,8 +30,10 @@ using std::istreambuf_iterator;
 static bool verbose = false;
 static bool customCompileArgs = false;
 static bool generateMakefileWhileCodding = false;
+static bool generateCompileCommands = true;
 static string customCompileArgsString = "";
 static string verboseOutput = "";
+static string compileComandsContent = "";
 static std::thread makeFileGenerationThread;
 
 //======================================================================================>
@@ -582,6 +584,28 @@ std::string getCodeFlags()
 			flags += item + " ";
 		else
 			flags += item;
+
+	if ( generateCompileCommands && flags != compileComandsContent )
+	{
+		std::fstream compileCommandsFile( path + "/compile_flags.txt", std::ios::in | std::ios::out | std::ios::binary );
+
+		if ( !compileCommandsFile.is_open() )
+			compileCommandsFile.open( path + "/compile_flags.txt", std::ios::out | std::ios::in | std::ios::binary | std::ios::trunc );
+
+		if ( !compileCommandsFile.is_open() )
+		{
+			cout << "couldn't generate compile_flags.txt at:[" + path + "]"  << endl;
+		}
+
+		for ( string &item : vectorFlags )
+			if ( &item != &vectorFlags.back() )
+				compileCommandsFile << item << endl;
+			else
+			 	compileCommandsFile << item;
+
+		compileCommandsFile.close();
+	}
+	compileComandsContent = flags;
 	return flags;
 }
 
