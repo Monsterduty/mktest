@@ -31,7 +31,7 @@ void manageArguments( int argc, const char **argv)
 	for ( int i = 0; i < argc; i++ )
 		if ( std::string( argv[i] ) == "--path" )
 		{
-			if ( argv[i] == nullptr )
+			if ( argv[i + 1] == nullptr )
 			{
 				throwMessage( "[--path] requires an argument", THROW_CODE::ERROR );
 				exit(1);
@@ -66,9 +66,11 @@ void manageArguments( int argc, const char **argv)
 					std::cout << "\naborting\n";
 					exit(0);
 				}
-
-				path = newPath;
 			}
+			if ( newPath[0] == '/' || newPath.find("://") < 2 )
+				path = newPath;
+			else
+				path = std::filesystem::current_path().string() + "/" + newPath;
 		}
 
 	for ( int i = 0; i < argc; i++ )
