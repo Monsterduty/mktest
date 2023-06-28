@@ -32,9 +32,6 @@ void resetVariables()
 	reEdit = false;
 };
 
-
-
-
 std::string getCodeFlags()
 {
 	std::vector<std::string> vectorFlags = readFile();
@@ -127,6 +124,7 @@ void mktest()
 			{
 				flags = getCodeFlags();
 				generateMakeFile(flags);
+				std::this_thread::sleep_for( std::chrono::seconds(1) );
 			}
 		} );	
 
