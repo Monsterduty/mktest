@@ -74,7 +74,7 @@ class environmentMethod : public baseMethod
 			return;
 
 		if ( allowedSyntax.at(step) == "NAME" )
-			for ( int i = 0; i < fields.size(); i++ )
+			for ( size_t i = 0; i < fields.size(); i++ )
 				if ( fields.at(i) == element )
 				{
 					error = false;
@@ -198,7 +198,7 @@ public:
 			return;
 
 		if ( allowedSyntax.at(step) == "NAME" )
-			for ( int i = 0; i < names.size(); i++ )
+			for ( size_t i = 0; i < names.size(); i++ )
 				if ( names.at(i) == element )
 				{
 					error = false;
@@ -296,7 +296,7 @@ void readConfigLanguage( std::vector<fileStructPrototype> fileData )
 	{
 		if ( !errorMessage )
 			//for each line element.
-			for ( int i = 0; i < data.lineElements.size(); i++ )
+			for ( size_t i = 0; i < data.lineElements.size(); i++ )
 			{
 				//once completed, reseting all the reading proccess.
 				if ( codeSegmentsVerification[0] && codeSegmentsVerification[1] && codeSegmentsVerification[2] )
@@ -310,7 +310,7 @@ void readConfigLanguage( std::vector<fileStructPrototype> fileData )
 				//the code structure must start with a type declaration every time.
 				if ( !codeSegmentsVerification[0] )
 				{
-					for ( int f = 0; f < keyWords.size(); f++ )
+					for ( size_t f = 0; f < keyWords.size(); f++ )
 						if ( keyWords.at(f).keyWord == data.lineElements.at( sectionReaded[0] + 1 ) )
 						{
 							codeSegmentsVerification[0] = true;

@@ -21,7 +21,7 @@ int utils::compString( std::string &s1, std::string &s2 )
 	if ( s1.size() == 0 || s2.size() == 0 )
 		return 0;
 
-	for ( int i = 0; i < std::max( s1.size(), s2.size() ); i++ )
+	for ( uint64_t i = 0; i < std::max( s1.size(), s2.size() ); i++ )
 	{
 		if ( i > std::min( s1.size(), s2.size() ) )
 			return i -1;
@@ -39,9 +39,8 @@ void utils::keepStringStructure( std::string required, std::string base, std::st
 	if ( !required.size() || !base.size() || !source.size() )
 		return;
 
-	//std::cout << "keepStringStructure( \"" + required + "\", \""+ base +"\" )" << std::endl;
 
-	int pos = source.find(base);
+	size_t pos = source.find(base);
 	while( pos != std::string::npos )
 	{
 	//	std::cout << "called keepStringStructure" << std::endl;
@@ -52,7 +51,7 @@ void utils::keepStringStructure( std::string required, std::string base, std::st
 
 void utils::replaceByString( std::string replace, std::string withThis, std::string &source )
 {
-	int pos = source.find( replace );
+	size_t pos = source.find( replace );
 	while ( pos != std::string::npos )
 	{
 		source = source.substr( 0, pos ) + withThis + source.substr( pos + replace.size(), source.length() );

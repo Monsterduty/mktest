@@ -34,8 +34,11 @@ void resetVariables()
 
 std::string getCodeFlags()
 {
+	mkfileRules.clear();
+	mkfileRules.shrink_to_fit();
+
 	std::vector<std::string> vectorFlags = readFile();
-	for ( int i = 0; i < vectorFlags.size(); i++ )
+	for ( size_t i = 0; i < vectorFlags.size(); i++ )
 		if ( std::count( vectorFlags.begin(), vectorFlags.end(), vectorFlags.at(i) ) > 1 )
 		{
 			vectorFlags.erase( vectorFlags.begin() + i );

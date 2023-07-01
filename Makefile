@@ -1,6 +1,6 @@
-CC = clang++ -std=c++17 -w -Wall -O3 -static #static release build
+#CC = clang++ -std=c++17 -w -Wall -O3 -static #static release build
 #CC = g++ -std=c++17 -w -O3 # release build
-#CC = g++ -Wall -std=c++17 -O0 -g3 # debug build
+CC = g++ -Wall -std=c++17 -O0 -g3 # debug build
 
 OBJ_PATH = obj/
 SRC_PATH = src/

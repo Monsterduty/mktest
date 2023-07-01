@@ -18,8 +18,9 @@ void resolveLibsFlags( std::string &buffer, std::vector<std::string> &results )
 	if ( buffer.find("SDL_mixer.h") != string::npos) results.push_back("-lSDL2_mixer");
 	if ( buffer.find("SDL2_gfxPrimitives.h") != string::npos ) results.push_back("-lSDL2_gfx");
 	if ( buffer.find("SDL_ttf.h") != string::npos  ) results.push_back("-lSDL2_ttf");
+	
 	if ( buffer.find( "Q" ) != string::npos || buffer.find("q") != string::npos )
-	{ 
+	{
 		results.push_back("-lQt6Core");
 		results.push_back("-std=c++17");
 		for ( int i = 0; i < 322; i++ )

@@ -50,7 +50,7 @@ void readConfig( std::string file )
 
 		std::string word = "";
 		//saving line words as elements.
-		for( int i = 0; i < aux.formatedLine.length(); i++ )
+		for( size_t i = 0; i < aux.formatedLine.length(); i++ )
 			if ( aux.formatedLine[i] != ' ' && i < aux.formatedLine.length() -1 )
 			{
 				if ( aux.formatedLine[i] == '"' )
@@ -86,7 +86,7 @@ bool setEnvironment( std::string name )
 {
 	int pos = -1;
 
-	for ( int i = 0; i < declaredEnvironments.size(); i++ )
+	for ( size_t i = 0; i < declaredEnvironments.size(); i++ )
 		if ( declaredEnvironments.at(i).name == name )
 			pos = i;
 

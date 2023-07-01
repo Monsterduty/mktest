@@ -116,7 +116,7 @@ void createNecesaryFiles( std::string fileName)
 	if ( fileName.find(".h") != std::string::npos )
 	{
 		std::string define = "";
-		for ( int i = 0; i < fileName.length(); i++ )
+		for ( size_t i = 0; i < fileName.length(); i++ )
 			define.push_back( fileName[i] == '.' ? '_' : toupper( fileName[i] ) );
 		saveFile << "#ifndef " << define << std::endl;
 		saveFile << "#define " << define << std::endl << std::endl;
@@ -344,7 +344,7 @@ std::vector<std::string> readFile( std::vector<std::string> *recursivePreviousFl
 		if ( buffer.find( "//args-> " ) != std::string::npos )
 		{
 			programsArgs = "";
-			for ( int i = 9; i < buffer.size(); i++ )
+			for ( size_t i = 9; i < buffer.size(); i++ )
 				programsArgs+= buffer[i];
 		};
 		if ( !customCompileArgs )
@@ -364,7 +364,7 @@ std::vector<std::string> readFile( std::vector<std::string> *recursivePreviousFl
 		for ( std::string &linked : linkedFiles )
 		{
 			file = linked;
-			readFile( &results );
+			results = readFile( &results );
 			
 			if ( file.find(".h") != std::string::npos )
 			if ( utils::FileExist( file.substr( 0, file.find(".h") ) + ".cpp" ) )
@@ -376,7 +376,9 @@ std::vector<std::string> readFile( std::vector<std::string> *recursivePreviousFl
 				if ( !ignore )
 				{
 					file = file.substr(0, file.find(".h")) + ".cpp";
-					readFile( &results );
+					if ( file[0] != '/' )
+						file = "/" + file;
+					results = readFile( &results );
 				}
 			}
 		}
