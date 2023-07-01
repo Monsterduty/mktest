@@ -1,6 +1,5 @@
-#pragma once
-//#include <string>
-//#include <iterator>
+#ifndef UTILS_HPP
+#define UTILS_HPP
 #include "defaultIncludes.hpp"
 
 namespace utils
@@ -36,3 +35,5 @@ namespace utils
 			return false;
 		}
 }
+
+#endif

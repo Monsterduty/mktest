@@ -1,6 +1,6 @@
-#pragma once
-//#include <string>
-//#include <vector>
+#ifndef TEST_SCRIPT_METHODS_HPP
+#define TEST_SCRIPT_METHODS_HPP
+
 #include "defaultIncludes.hpp"
 
 	//struct to determine line positions.
@@ -15,7 +15,7 @@ struct fileStructPrototype
 
 void readConfigLanguage( std::vector<fileStructPrototype> fileData );
 
-struct errorMessageStruct;
+class errorMessageStruct;
 void environmentObject( bool *stopCalling, std::string *currentText, std::vector<std::string> *fields, errorMessageStruct *errorMessage );
 
 class errorMessageStruct
@@ -47,3 +47,5 @@ class environmentToSetClass
 };
 
 inline std::vector<environmentToSetClass> declaredEnvironments = {};
+
+#endif

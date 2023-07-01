@@ -1,6 +1,6 @@
-#CC = clang++ -std=c++17 -w -O3 -static #static release build
+CC = clang++ -std=c++17 -w -Wall -O3 -static #static release build
 #CC = g++ -std=c++17 -w -O3 # release build
-CC = clang++ -std=c++17 -O0 -g3 # debug build
+#CC = g++ -Wall -std=c++17 -O0 -g3 # debug build
 
 OBJ_PATH = obj/
 SRC_PATH = src/
@@ -41,7 +41,7 @@ ${OBJ_PATH}makefileRule.hpp.gch: ${INC_PATH}makefileRule.hpp ${OBJ_PATH}defaultI
 
 	$(CC) ${ARGS} ${INC_PATH}makefileRule.hpp -o ${OBJ_PATH}makefileRule.hpp.gch
 
-${OBJ_PATH}makefileRule.o: ${SRC_PATH}makefileRule.cpp ${OBJ_PATH}makefileRule.hpp.gch ${OBJ_PATH}global.hpp.gch
+${OBJ_PATH}makefileRule.o: ${SRC_PATH}makefileRule.cpp ${OBJ_PATH}makefileRule.hpp.gch ${OBJ_PATH}global.hpp.gch ${OBJ_PATH}utils.hpp.gch
 
 	${CC} ${ARGS} -c ${SRC_PATH}makefileRule.cpp -o ${OBJ_PATH}makefileRule.o
 

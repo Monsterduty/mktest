@@ -1,5 +1,4 @@
 #include "manageArguments.hpp"
-//#include "defaultIncludes.hpp"
 #include "global.hpp"
 #include "mktestInfoOutput.hpp"
 #include "configParser.hpp"
@@ -71,6 +70,7 @@ void manageArguments( int argc, const char **argv)
 				path = newPath;
 			else
 				path = std::filesystem::current_path().string() + "/" + newPath;
+			break;
 		}
 
 	for ( int i = 0; i < argc; i++ )
@@ -90,6 +90,7 @@ void manageArguments( int argc, const char **argv)
 				break;
 			}
 				configFile = fileName;
+			break;
 		}
 	//read config file.
 	if ( std::filesystem::exists(configFile) )

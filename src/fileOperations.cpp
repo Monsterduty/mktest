@@ -140,13 +140,13 @@ void saveCode( std::string onThisPlace )
 	if ( onThisPlace == "." )
 		onThisPlace = "./mktestProj";
 		
-		//checking if the destination folder exist.
-		std::filesystem::path where( onThisPlace );
-		auto status = std::filesystem::symlink_status( where );
+	//checking if the destination folder exist.
+	std::filesystem::path where( onThisPlace );
+	auto status = std::filesystem::symlink_status( where );
 
-		//if not exist create one.
-		if ( !std::filesystem::exists( status ) )
-			std::filesystem::create_directory( where );
+	//if not exist create one.
+	if ( !std::filesystem::exists( status ) )
+		std::filesystem::create_directory( where );
 
 	//if the path provided is not a dot, and the last character is a slash, remove that character.
 	if ( onThisPlace.size() > 1 && onThisPlace[onThisPlace.size() -1] != '/' )
@@ -196,8 +196,121 @@ void deleteFile( std::string File)
 	if ( search.find( name ) != std::string::npos )
 		std::filesystem::remove( path + File );
 	else
+	{
 		throwMessage( path + File + " doesn't exist yet", THROW_CODE::ERROR );
 		exit(1);
+	}
+}
+
+//this function will read the given file and return all the user level #include "files"
+//as a vector of files.
+static std::vector<std::string> getLinkedFiles( std::string filePath )
+{
+	std::ifstream file( filePath );
+	if ( !file )
+		return {};
+
+	std::string buffer = "";
+	std::vector<std::string> result = {};
+
+	while ( std::getline( file, buffer ) )
+	{
+		if ( buffer.find( "#include \"" ) == std::string::npos )
+			continue;
+			
+		int start = buffer.find('"') + 1;
+		int end = buffer.find_last_of('"');
+		result.push_back( buffer.substr( start, end - start ) );
+	}
+
+	file.close();
+	return result;
+}
+
+void modArgsLineParser( std::string modArgLine, std::vector<std::string> *returnFlags = nullptr )
+{
+	std::vector<std::string> fileModArgs = {};
+	std::string word = "";
+	for ( char &c : modArgLine )
+		if ( c != ' ' && c != '\t' && &c != &modArgLine.back() )
+			word.push_back(c);
+		else
+		{
+			if ( word == "" )
+				continue;
+			if ( &c == &modArgLine.back() )
+				word.push_back(c);
+			fileModArgs.push_back(word);
+			word.clear();
+		}
+
+	//the kind of editor if was specified, if isn't specified by default will use nano
+	if ( utils::find( fileModArgs.begin(), fileModArgs.end(), "editor->" ) )
+	{
+		size_t pos = utils::whereIs( fileModArgs.begin(), fileModArgs.end(), "editor->" );
+		editor = fileModArgs.size() >= pos ? fileModArgs.at(pos+1) + " " : editor;
+	};
+
+	//the compiler to use, if isn't specified by default will use g++
+	if( utils::find( fileModArgs.begin(), fileModArgs.end(), "compiler->" ) )
+	{
+		size_t pos = utils::whereIs( fileModArgs.begin(), fileModArgs.end(), "compiler->" );
+		compiler = fileModArgs.size() >= pos ? fileModArgs.at(pos+1) + " " : compiler;
+	};
+
+	 //coplile the code with debug flags and open the executable with gdb for debug
+	 if ( returnFlags ) 
+	if ( utils::find( fileModArgs.begin(), fileModArgs.end(), "debug" ) )
+	{ 
+		returnFlags->push_back( "-g -O3");
+		debug = "\tgdb --se=" + path + executable + " --readnow -q\0";
+	};
+
+	if ( utils::find( fileModArgs.begin(), fileModArgs.end(),"keep") ) writeCache("fileToEdit: ", file);
+
+	//active the [ reEdit ] variable for not get out from the mktest program
+	if ( utils::find( fileModArgs.begin(), fileModArgs.end(),"reEdit") ) reEdit = true;
+
+	//use language version
+	if ( returnFlags )
+	if ( utils::find( fileModArgs.begin(), fileModArgs.end() ,"c++->") && !customCompileArgs )
+	{
+		size_t pos = utils::whereIs( fileModArgs.begin(), fileModArgs.end(), "c++->" );
+		returnFlags->push_back( fileModArgs.size() >= pos ? "-std=c++" + fileModArgs.at(pos+1) : "" );
+	}
+}
+
+static void resolveMakefileRules( std::vector<std::string> fileNames, std::vector<std::string> &results )
+{
+	std::string dependencies = "";
+	for ( std::string &name : fileNames )
+	{
+		if ( name.find(".h") == std::string::npos )
+			continue;
+
+		dependencies += name + ".gch ";
+
+		if ( utils::FileExist( name.substr(0, name.find(".h")) + ".cpp" ) )
+			dependencies += name.substr(0, name.find(".h")) + ".o ";
+	}
+
+	std::string goal = "";
+
+	if ( file.find(".h") != std::string::npos )
+		goal = file + ".gch";
+	else 
+		goal = file.substr(0, file.find(".c")) + ".o";
+
+	//clear goal name.
+	if ( goal[0] == '/')
+		goal = goal.substr(1, goal.size());
+
+	//avoid repetitions.
+	for ( makefileRule &item : mkfileRules )
+		if ( goal == item.provideGoal() )
+			return;
+
+	mkfileRules.push_back( makefileRule( goal, file, dependencies ) );
 }
 
 //read your code file for comment flags and required argument to compile
@@ -225,55 +338,7 @@ std::vector<std::string> readFile( std::vector<std::string> *recursivePreviousFl
 	{
 		//detecting mod args
 		if ( buffer.find("//mod-> ") != std::string::npos )
-		{
-			std::vector<std::string> fileModArgs = {};
-			std::string word = "";
-			for ( char &c : buffer )
-				if ( c != ' ' && c != '\t' && &c != &buffer.back() )
-					word.push_back(c);
-				else
-				{
-					if ( word == "" )
-						continue;
-					if ( &c == &buffer.back() )
-						word.push_back(c);
-					fileModArgs.push_back(word);
-					word.clear();
-				}
-
-			//the kind of editor if was specified, if isn't specified by default will use nano
-			if ( utils::find( fileModArgs.begin(), fileModArgs.end(), "editor->" ) )
-			{
-				size_t pos = utils::whereIs( fileModArgs.begin(), fileModArgs.end(), "editor->" );
-				editor = fileModArgs.size() >= pos ? fileModArgs.at(pos+1) + " " : editor;
-			};
-
-			//the compiler to use, if isn't specified by default will use g++
-			if( utils::find( fileModArgs.begin(), fileModArgs.end(), "compiler->" ) )
-			{
-				size_t pos = utils::whereIs( fileModArgs.begin(), fileModArgs.end(), "compiler->" );
-				compiler = fileModArgs.size() >= pos ? fileModArgs.at(pos+1) + " " : compiler;
-			};
-
-			 //coplile the code with debug flags and open the executable with gdb for debug
-			if ( utils::find( fileModArgs.begin(), fileModArgs.end(), "debug" ) )
-			{ 
-				results.push_back( "-g -O3");
-				debug = "\tgdb --se=" + path + executable + " --readnow -q\0";
-			};
-
-			if ( utils::find( fileModArgs.begin(), fileModArgs.end(),"keep") ) writeCache("fileToEdit: ", file);
-
-			//active the [ reEdit ] variable for not get out from the mktest program
-			if ( utils::find( fileModArgs.begin(), fileModArgs.end(),"reEdit") ) reEdit = true;
-
-			//use language version
-			if ( utils::find( fileModArgs.begin(), fileModArgs.end() ,"c++->") && !customCompileArgs )
-			{
-				size_t pos = utils::whereIs( fileModArgs.begin(), fileModArgs.end(), "c++->" );
-				results.push_back( fileModArgs.size() >= pos ? "-std=c++" + fileModArgs.at(pos+1) : "" );
-			}
-		};
+			modArgsLineParser(buffer, &results);
 
 		//to give arguments for your executable, see mktest --help for more info
 		if ( buffer.find( "//args-> " ) != std::string::npos )
@@ -282,75 +347,41 @@ std::vector<std::string> readFile( std::vector<std::string> *recursivePreviousFl
 			for ( int i = 9; i < buffer.size(); i++ )
 				programsArgs+= buffer[i];
 		};
-
-		//detecting libraries and headers,
 		if ( !customCompileArgs )
 		if ( buffer.find("#include") != std::string::npos )
-		{
 			resolveLibsFlags(buffer, results);
-
-			//for MakeFile rules
-			if ( buffer.find('"') != std::string::npos )
-			{	
-				//cleaning string for have only the file name
-				buffer = buffer.substr( buffer.find('"') + 1, buffer.length() );
-				buffer = buffer.substr(0, buffer.find('"') );
-
-				if ( buffer.find(".h") != std::string::npos )
-				{ 
-					//This lamda function allows to read recursively all the file linked to our test.cpp file
-					//and it's tree hierarchy.
-					auto recursiveLecture = [&]( std::string &objective ) {
-						for ( std::string &item : openedFiles )
-							if ( path + "/" + objective == item )
-								return;
-						openedFiles.push_back( path + "/" + objective );
-						std::string oldFile = file;
-						file = "/" + objective;
-						results = readFile( &results );
-						file = oldFile;
-					};
-
-					if ( utils::FileExist( buffer ) )
-					{
-						//recursive reading to get includes.
-						recursiveLecture( buffer );
-
-						//adding Makefile rule to the vector of Makefile rules
-						mkfileRules.push_back( makefileRule( buffer + ".gch" , buffer, "",compiler ) );
-
-						//check repetitions
-					 	if ( mkfileRules.size() > 1 )
-					 		for ( int i = 0; i < mkfileRules.size() -1; i++ )
-					 			if ( mkfileRules.at(i).provideGoal() == mkfileRules.back().provideGoal() )
-					 				mkfileRules.pop_back();
-					 }
-
-					 //cheching if there's a source file for the header and adding it if exist.
-					std::string source = buffer.substr(0, buffer.find(".h")) + ".cpp";
-					 if ( utils::FileExist( source ) )
-					 {
-						 //recursive reading to get includes.
-						 recursiveLecture( source );
-
-					 	source = source.substr( 0, source.find(".cpp") );
-					 	mkfileRules.push_back( makefileRule( source + ".o", source + ".cpp", "", compiler + " -c " ) );
-
-					 	if ( mkfileRules.size() > 1 )
-					 		for ( int i = 0; i < mkfileRules.size() -1; i++ )
-					 			if ( mkfileRules.at(i).provideGoal() == mkfileRules.back().provideGoal() )
-					 				mkfileRules.pop_back();
-					 		
-					 }
-				}
-			}
-		};
 	};
 
 	if ( reading.is_open() )
 		reading.close();
 
-	
+	//detecting libraries and headers,
+	if ( !customCompileArgs )
+	{
+		std::vector<std::string> linkedFiles = getLinkedFiles(path + (file[0] != '/' ? "/" + file : file ) );
+		resolveMakefileRules( linkedFiles, results );
+		std::string aux = file;
+		for ( std::string &linked : linkedFiles )
+		{
+			file = linked;
+			readFile( &results );
+			
+			if ( file.find(".h") != std::string::npos )
+			if ( utils::FileExist( file.substr( 0, file.find(".h") ) + ".cpp" ) )
+			{
+				bool ignore = false;
+				for ( makefileRule &item : mkfileRules )
+					if ( item.provideGoal() == file.substr( 0, file.find(".h") ) + ".o" )
+						ignore = true;
+				if ( !ignore )
+				{
+					file = file.substr(0, file.find(".h")) + ".cpp";
+					readFile( &results );
+				}
+			}
+		}
+		file = aux;
+	}
 
 	return results;
 };

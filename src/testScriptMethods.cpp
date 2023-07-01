@@ -56,7 +56,7 @@ class environmentMethod : public baseMethod
 		{
 			end = true;
 			step = 0;
-			int configToDefine = -1;
+			configToDefine = -1;
 			return;
 		}
 

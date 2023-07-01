@@ -1,4 +1,5 @@
-#pragma once
+#ifndef FILE_OPERATIONS_HPP
+#define FILE_OPERATIONS_HPP
 
 #include "defaultIncludes.hpp"
 
@@ -14,3 +15,5 @@ void deleteFile( std::string File);
 
 //save your code file on the provided path
 void saveCode( std::string onThisPlace = "" );
+
+#endif
