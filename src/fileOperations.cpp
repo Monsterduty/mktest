@@ -347,7 +347,10 @@ std::vector<std::string> readFile( std::vector<std::string> *recursivePreviousFl
 			for ( size_t i = 9; i < buffer.size(); i++ )
 				programsArgs+= buffer[i];
 		};
-		if ( !customCompileArgs )
+
+		//avoiding resolve libs if the user is going to provide compile commands manually.
+		if ( customCompileArgs )
+			continue;
 		if ( buffer.find("#include") != std::string::npos )
 			resolveLibsFlags(buffer, results);
 	};
@@ -356,34 +359,33 @@ std::vector<std::string> readFile( std::vector<std::string> *recursivePreviousFl
 		reading.close();
 
 	//detecting libraries and headers,
-	if ( !customCompileArgs )
+	std::vector<std::string> linkedFiles = getLinkedFiles(path + (file[0] != '/' ? "/" + file : file ) );
+	resolveMakefileRules( linkedFiles, results );
+	std::string aux = file;
+	for ( std::string &linked : linkedFiles )
 	{
-		std::vector<std::string> linkedFiles = getLinkedFiles(path + (file[0] != '/' ? "/" + file : file ) );
-		resolveMakefileRules( linkedFiles, results );
-		std::string aux = file;
-		for ( std::string &linked : linkedFiles )
-		{
-			file = linked;
-			results = readFile( &results );
-			
-			if ( file.find(".h") != std::string::npos )
-			if ( utils::FileExist( file.substr( 0, file.find(".h") ) + ".cpp" ) )
-			{
-				bool ignore = false;
-				for ( makefileRule &item : mkfileRules )
-					if ( item.provideGoal() == file.substr( 0, file.find(".h") ) + ".o" )
-						ignore = true;
-				if ( !ignore )
-				{
-					file = file.substr(0, file.find(".h")) + ".cpp";
-					if ( file[0] != '/' )
-						file = "/" + file;
-					results = readFile( &results );
-				}
-			}
-		}
-		file = aux;
+		file = linked; //remeber "file" is a global variable also used in readFile.
+		results = readFile( &results );
+		
+		if ( file.find(".h") == std::string::npos )
+			continue;
+		if ( !utils::FileExist( file.substr( 0, file.find(".h") ) + ".cpp" ) ) //if file doesn't exist, nothing to do here.
+			continue;
+
+		//if a makefileRule already was provided for this file, just jump for the next iteration.
+		bool ignore = false;
+		for ( makefileRule &item : mkfileRules )
+			if ( item.provideGoal() == file.substr( 0, file.find(".h") ) + ".o" )
+				ignore = true;
+		if ( ignore )
+			continue;
+		
+		file = file.substr(0, file.find(".h")) + ".cpp";
+		if ( file[0] != '/' )
+			file = "/" + file;
+		results = readFile( &results );
 	}
+	file = aux;
 
 	return results;
 };

@@ -24,7 +24,7 @@ static std::string normalizeNames( std::string names )
 		}
 
 	//erase repetitions.
-	for ( int i = 0; i < vec.size(); i++ )
+	for ( size_t i = 0; i < vec.size(); i++ )
 		while( std::count( vec.begin(), vec.end(), vec.at(i) ) > 1 )
 			vec.erase( vec.begin() + i );
 
@@ -35,6 +35,9 @@ static std::string normalizeNames( std::string names )
 	return ret;
 }
 
+/* 
+ * Maybe future implementation at utils.hpp
+ *
 static std::string getWordsWith( std::string pattern, std::string line )
 {
 	std::string ret = "", aux = "";
@@ -58,6 +61,7 @@ static std::string getWordsWith( std::string pattern, std::string line )
 		aux = aux.substr( 0, aux.size() -1 );
 	return aux;
 }
+*/
 
 makefileRule::makefileRule( std::string goal, std::string source, std::string deps )
 {
@@ -118,7 +122,7 @@ void generateMakeFile( std::string flags )
 	//and compiler with the objFiles and flags are the procedure,
 	//file g++ result in: g++ (execuable = text.cpp) (objFile = animFIle.o anotherFile.o)
 	makefileRule mainRule( executable, objFiles, depsGoals );
-	mainRule.setCompileFlags( flags );
+	mainRule.setCompileFlags( customCompileArgs ? customCompileArgsString : flags );
 
 	mkfile << mainRule.provideRule();
 
