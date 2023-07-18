@@ -23,7 +23,7 @@ void manageArguments( int argc, const char **argv)
 	for ( int i = 0; i < argc; i++ )
 		if ( std::string( argv[i] ) == "-v" )
 		{
-			std::cout << version << std::endl;
+			std::cout << version << " - " << buildType << std::endl;
 			exit(0);
 		}
 

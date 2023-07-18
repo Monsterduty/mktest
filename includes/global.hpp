@@ -11,8 +11,8 @@
 	inline std::string home = getenv("HOME");
 	inline std::string executable = "/a.out";
 	inline std::string configFile = home + "/.config/mktest/config.conf";
-	inline std::string version = "mktest 3.0 linux";
-
+	inline std::string version = "mktest 3.0 Linux";
+	
 #else
 	auto getPath = [](){ 
 		std::string ret = getenv("TMPDIR");
@@ -27,7 +27,7 @@
 	inline std::string home = getenv("HOME");
 	inline std::string executable = "/a.out";
 	inline std::string configFile = home + "/.config/mktest/config.conf";
-	inline std::string version = "mktest 3.0 android";
+	inline std::string version = "mktest 3.0 Android";
 
 #endif //android
 #endif // linux
@@ -39,8 +39,20 @@
 	inline std::string home = std::string(getenv("USERPROFILE"));
 	inline std::string executable = "/a.exe";
 	inline std::string configFile = std::string(getenv("appdata")) + "/mktest/config.conf";
-	inline std::string version = "mktest 3.0 windows";
+	inline std::string version = "mktest 3.0 Windows";
 
+#endif
+
+#if defined (DEBUG_BUILD)
+	inline const char *buildType = "Debug";
+#elif defined (RELEASE_BUILD)
+	inline const char *buildType = "Release";
+#elif defined (RELEASE_STATIC_BUILD)
+	inline const char *buildType = "Static Release";
+#elif defined (DEBUG_STATIC_BUILD)
+	inline const char *buildType = "Static Debug";
+#else
+	inline const char *buildType = "Unkown";
 #endif
 
 inline std::string file = "/test.cpp";
