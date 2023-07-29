@@ -404,6 +404,9 @@ void createExampleFile( std::string wich )
 	//stream for the current code file
 	std::ofstream codeFile( path + file, std::ios::out | std::ios::binary );
 
+	//report we're using a template to generate a makefile and compile commads.
+	usingTemplate = true;
+
 	//templates availables
 	if( wich == "curl" ){ codeFile << curlExample; codeFile.close(); return; };
 	if( wich == "imlib2" ){ codeFile << imlib2Template; codeFile.close(); return; };

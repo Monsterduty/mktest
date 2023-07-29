@@ -73,3 +73,4 @@ inline bool verbose = false;
 inline bool customCompileArgs = false;
 inline bool generateMakefileWhileCodding = false;
 inline bool generateCompileCommands = true;
+inline bool usingTemplate = false;

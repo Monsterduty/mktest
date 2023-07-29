@@ -60,9 +60,7 @@ std::string getCodeFlags()
 			compileCommandsFile.open( path + "/compile_flags.txt", std::ios::out | std::ios::in | std::ios::binary | std::ios::trunc );
 
 		if ( !compileCommandsFile.is_open() )
-		{
 			std::cout << "couldn't generate compile_flags.txt at:[" + path + "]"  << std::endl;
-		}
 
 		for ( std::string &item : vectorFlags )
 			if ( &item != &vectorFlags.back() )
@@ -130,6 +128,14 @@ void mktest()
 				std::this_thread::sleep_for( std::chrono::seconds(1) );
 			}
 		} );	
+
+	//in case we're using a template and we're not using background makefile/compilecommands makeFileGeneration 
+	//generate those files once for the template (usefull for the LSP)
+	if ( usingTemplate && !generateMakefileWhileCodding )
+	{
+		flags = getCodeFlags();
+		generateMakeFile(flags);
+	}
 
 	//opening test.cpp file or some one else for editing.
 	system( defaultEditor.c_str() );
