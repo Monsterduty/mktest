@@ -104,7 +104,7 @@ namespace terminal_methods
 			throwMessage( "not working directoty to keep file", THROW_CODE::WARNING );
 		}
 		modArgs += " keep";
-		if ( file == "/test.cpp" )
+		if ( file == DEFAULT_MAIN_FILE )
 			return;
 		//if the [ file ] variable has an slash character, is nedded to romove that
 		std::string read = file.find('/') != std::string::npos ? file.substr(1, file.length() ) : file;

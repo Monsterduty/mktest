@@ -322,7 +322,13 @@ std::vector<std::string> readFile( std::vector<std::string> *recursivePreviousFl
 	debug = "";
 
 	//stream from your code file
-	std::ifstream reading(path+file);
+	std::ifstream reading;
+
+	//avoid to compile or generate makefiles from a file whitch doesn't contains the main function.
+	if ( recursivePreviousFlags == nullptr )
+		reading.open( path + DEFAULT_MAIN_FILE );
+	else
+		reading.open(path + file);
 
 	//buffer to read the whole lines and a result for return the nedded flags for compile your code
 	std::string buffer = "";
@@ -359,9 +365,17 @@ std::vector<std::string> readFile( std::vector<std::string> *recursivePreviousFl
 		reading.close();
 
 	//detecting libraries and headers,
-	std::vector<std::string> linkedFiles = getLinkedFiles(path + (file[0] != '/' ? "/" + file : file ) );
-	resolveMakefileRules( linkedFiles, results );
+	std::vector<std::string> linkedFiles = {};
+	if ( recursivePreviousFlags == nullptr )
+		linkedFiles = getLinkedFiles(path + DEFAULT_MAIN_FILE );
+	else
+		linkedFiles = getLinkedFiles(path + (file[0] != '/' ? "/" + file : file ) );
+
 	std::string aux = file;
+	if ( recursivePreviousFlags == nullptr )
+		file = DEFAULT_MAIN_FILE;
+	resolveMakefileRules( linkedFiles, results );
+
 	for ( std::string &linked : linkedFiles )
 	{
 		file = linked; //remeber "file" is a global variable also used in readFile.

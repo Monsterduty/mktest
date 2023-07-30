@@ -111,7 +111,7 @@ void mktest()
 	//this is the full command to start editing the file
 	defaultEditor = editor + path + file;
 
-	//changing working path, so editors line vim or emacs can view another files in the same sesion.
+	//changing working path, so editors like vim or emacs can view another files in the same sesion.
 	const std::string currentPath = std::filesystem::current_path().string();
 	std::filesystem::current_path( path );
 

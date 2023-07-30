@@ -55,8 +55,8 @@
 	inline const char *buildType = "Unkown";
 #endif
 
-inline std::string file = "/test.cpp";
-
+#define DEFAULT_MAIN_FILE "/test.cpp"
+inline std::string file = DEFAULT_MAIN_FILE;
 inline std::string editor = "nano ";
 inline std::string compiler = "g++";
 inline std::string debug = "";
